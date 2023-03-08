@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+
+<!-- Ref:http://vpg.cs.princeton.edu/ -->
+
+
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Decoupling Skill Learning from Robotic Control for Generalizable Manipulation</title>
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+	<link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,900" rel="stylesheet">
+    <link rel="stylesheet" href="libs/font-awesome/css/font-awesome.min.css">
+    <!--??-->
+    <link href="css/project.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <div id="main" style="padding-bottom:1em; padding-top: 5em; width: 60em; max-width: 70em; margin-left: auto; margin-right: auto;">
+        <section id="four">
+            <h1 style="text-align: center; margin-bottom: 0;">
+                Decoupling Skill Learning from Robotic Control for Generalizable Object Manipulation
+            </h1>
+            <br>
+            <section>
+                <div class="box alt" style="margin-bottom: 1em;">
+                    <h5 style="text-align: center;">      
+                            Kai Lu<sup>1</sup>, 
+                            Bo Yang<sup>2</sup>, 
+                            Bing Wang<sup>1</sup>,
+                            Andrew Markham<sup>1</sup>
+                </div>
+            </section>
+
+            <!-- <div class="row 50% uniform" style="width: 80%;">
+                    <div class="1u" style="font-size: 0.8em; line-height: 1.5em; text-align: center;">Yuhong Deng <sup>*</sup></div>
+                    <div class="1u" style="font-size: 0.8em; line-height: 1.5em; text-align: center;">Xiangfeng Guo <sup>*</sup></div>
+                    <div class="1u" style="font-size: 0.8em; line-height: 1.5em; text-align: center;">Yixuan Wei <sup>*</sup></div>
+                    <div class="1u" style="font-size: 0.8em; line-height: 1.5em; text-align: center;">Kai Lu <sup>*</sup></div>
+                    <div class="1u" style="font-size: 0.8em; line-height: 1.5em; text-align: center;">Bin Fang </div>
+                    <div class="1u" style="font-size: 0.8em; line-height: 1.5em; text-align: center;">Di Guo </div>
+                    <div class="1u" style="font-size: 0.8em; line-height: 1.5em; text-align: center;">Fuchun Sun </div>
+                    <div class="1u$" style="font-size: 0.8em; line-height: 1.5em; text-align: center;">Huaping Liu <sup>$</sup></div>
+                </div> -->
+            <h6 style="color: #a2a2a2; margin-bottom: 2em;"><sup>1</sup> K. Lu, B. Wang, and A. Markham are with the Departments 
+                of Computer Science, University of Oxford, Oxford, UK. {kai.lu, bing.wang, andrew.markham}@cs.ox.ac.uk<br>
+                <sup>2</sup>  B. Yang is with vLAR Group, Department of Computing, Hong Kong Polytechnic University, HKSAR. bo.yang@polyu.edu.hk<br>
+            </h6>
+            <h4 style="text-align: center;">
+                <a href="https://arxiv.org/abs/2303.04016">paper link</a>
+                <!-- &nbsp; &nbsp; &nbsp;
+                <a href="https://todo">code</a> -->
+            </h4>
+
+            <hr>
+            <!-- <br> -->
+            <b><h2 style="text-align: center;">Abstract</h2></b>
+
+            <p>
+                Recent works in robotic manipulation through reinforcement learning (RL) or imitation learning (IL) have shown potential for tackling a range of tasks e.g., opening a drawer or a cupboard. However, these techniques generalize poorly to unseen objects. We conjecture that this is due to the high-dimensional action space for joint control. In this paper, we take an alternative approach and separate the task of learning 'what to do' from 'how to do it' i.e., whole-body control. We pose the RL problem as one of determining the skill dynamics for a disembodied virtual manipulator interacting with articulated objects. The whole-body robotic kinematic control is optimized to execute the high-dimensional joint motion to reach the goals in the workspace. It does so by solving a quadratic programming (QP) model with robotic singularity and kinematic constraints. Our experiments on manipulating complex articulated objects show that the proposed approach is more generalizable to unseen objects with large intra-class variations, outperforming previous approaches. The evaluation results indicate that our approach generates more compliant robotic motion and outperforms the pure RL and IL baselines in task success rates.
+            </p>
+            
+            <center>
+                <div class="10u"><a href=""><span class="image fit"><img src="images/RobotManiSkill/decouple_core_webv0.png" alt=""></span></a></div>
+            </center>
+            
+            <!-- Insert a video and image in the same row -->
+            <!-- <div class="box alt" style="margin-bottom: 1em">
+                <div class="row 50% uniform">
+                    <div class="6u"><span class="image left" style="max-width: 100%; margin-right: 0; margin-bottom: 0;"><img src="images/RobotGrasping/concept.png" alt=""></span></div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="0"><source src="images/RobotGrasping/main.mp4" type="video/mp4">Your browser does not support this video.</video></div>
+                </div>
+            </div> -->
+
+            <p><b>Demonstration of decoupling skill dynamics.</b> The left panel shows how we use reinforcement learning to determine 
+                how to control a disembodied or floating end-effector ('what to do'). The right panel shows how we use Quadratic Programming 
+                to realize a compliant trajectory and set of joint-torque control signals ('how to do it'). The bottom panel shows how we can 
+                use this to generalize to different, previously unseen scenarios.
+            </p>       
+            <hr>
+
+            <!-- about the paper link and the author infomation -->
+            <!-- <p style="margin-bottom: 1em;">Latest version (27 Mar 2018): <a href="https://arxiv.org/abs/1803.09956">arXiv:1803.09956 [cs.RO]</a> or <a href="paper.pdf">here</a>.<br>To appear at IEEE International Conference on Intelligent Robots and Systems (IROS) 2018<br><font color="4e79a7">★ Best Cognitive Robotics Paper Award Finalist, IROS ★</font></p>
+            <div class="12u$"><a href="https://arxiv.org/pdf/1803.09956.pdf"><span class="image fit" style="border: 1px solid; border-color: #888888;"><img src="images/paper-thumbnail.jpg" alt=""></span></a></div> -->
+
+            <!-- <sup>1</sup> Princeton University&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<sup>2</sup> Google&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<sup>3</sup> Massachusetts Institute of Technology -->
+
+            <!-- about the code link and the bibtex infomation -->
+            <!-- <div class="row">
+                <div class="6u 12u$(xsmall)">
+                    <h3>Code</h3>
+                    Code is available on <a href="https://github.com/andyzeng/visual-pushing-grasping">Github</a>. Includes:
+                    <ul>
+                        <li>Training/testing code (with PyTorch/Python)</li>
+                        <li>Simulation environments (with V-REP)</li>
+                        <li>Code for real-world setups (with UR5 robots)</li>
+                        <li>Pre-trained models and baselines</li>
+                        <li>Evaluation code (with Python)</li>
+                    </ul>
+                </div>
+                <div class="6u$ 12u$(xsmall)">
+                    <h3>Bibtex</h3>
+                    <pre><code>@article{zeng2018learning,
+                    title={Learning Synergies between Pushing and Grasping with Self-supervised Deep Reinforcement Learning},
+                    author={Zeng, Andy and Song, Shuran and Welker, Stefan and Lee, Johnny and Rodriguez, Alberto and Funkhouser, Thomas},
+                    journal={arXiv preprint arXiv:1803.09956},
+                    year={2018}
+                    }</code></pre>
+                </div>
+            </div> -->
+            
+            <b><h2 style="text-align: center;">Summary video</h2></b>
+            <div class="12u$">
+                <video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="0">
+                    <source src="images/RobotManiSkill/icra_cm_kaivoi_18MB.mp4" type="video/mp4">Your browser does not support this video.
+                    </video>
+                </div>
+            <hr>
+            <!-- Insert a video from youtube -->
+            <!-- <iframe id="match-video" width="880" height="495" style="margin-bottom: 2em; margin-left: auto; margin-right: auto; display:block;" src="https://www.youtube.com/embed/-OkyX7ZlhiU?rel=0" frameborder="0" allowfullscreen="">
+            </iframe> width="880" height="495"  -->
+            
+
+            <b><h2 style="text-align: center;">Pipeline</h2></b>
+
+            <center>
+                <div class="10u"><a href=""><span class="image fit"><img src="images/RobotManiSkill/pipeline_icrav2.png" alt=""></span></a></div>
+            </center>
+
+            <p>
+                <b>Architecture of the proposed system.</b> 
+                From left-to-right: We use an assembly of PointNet modules for perception of static (e.g. size of object) and 
+                dynamic (e.g. current position of handle) states. These are input to a SAC RL framework to learn how to control the 
+                disembodied end-effector, realizing a 6-DOF motion skill. Through knowledge of the robot physical model, QP is used 
+                to optimize control of the joint dynamics of the whole-body robot.
+            </p>
+
+            <hr>
+
+            <b><h2 style="text-align: center;">Training process</h2></b>
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="1">
+                        <source src="images/RobotManiSkill/hand_learn_train_concat3.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        <!-- <h5 style="color: #a2a2a2; margin-bottom: 1em;">Total # of actions: 7 (task complete)</h5> -->
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="2">
+                        <source src="images/RobotManiSkill/hand_learn_test_concat.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        <!-- <h5 style="color: #a2a2a2; margin-bottom: 1em;">Total # of actions: 7 (task complete)</h5> -->
+                    </div>            
+                </div>
+            </div>
+            <p><b>Visualization of learning process.</b> (Left) During training process, the disembodied manipulator interactes with various cabinets.  (Right) Test on an unseen cabinet: by interacting with more cabinets, the RL model shows a better understanding of the skill dynamics, 
+                resulting in smoother and more reasonable motions.
+            </p>
+
+            <hr>
+
+            <b><h2 style="text-align: center;">Whole-body control</h2></b>
+            
+            <center>
+                <div class="10u"><a href=""><span class="image fit"><img src="images/RobotManiSkill/frame.png" alt=""></span></a></div>
+            </center>
+            <p> <b>Coordinate system of our method.</b>  During the manipulation process, we optimize the joint-space actions of the 
+                robot to approximate its end-effector (EE) motions to the disembodied manipulator's trajectory. 
+                At every time step, the ego-centric point cloud observation is obtained from the three RGB-D cameras mounted on the robot.
+             </p>
+
+            <!-- <center>
+                <div class="10u"><a href=""><span class="image fit"><img src="images/RobotManiSkill/controller.png" alt=""></span></a></div>
+            </center> -->
+
+            <div class="box alt">
+
+                <div class="row 50% uniform">
+                    <div class="6u"><a href=""><span class="image fit"><img src="images/RobotManiSkill/syn_m1.png" alt=""></span></a></div>
+                    <div class="6u$"><a href=""><span class="image fit"><img src="images/RobotManiSkill/syn_rob1.png" alt=""></span></a></div>
+                </div>
+               <p>
+                <b>QP-based whole-body controller. </b> We calculate the joint actions for whole-body control based on the robot's physical model. Our goal 
+                is to control the robot's EE to execute the learned skill dynamics in the same way as the disembodied manipulator. 
+               </p>
+            </div>
+
+
+
+            <hr>
+            <b><h2 style="text-align: center;">Example Results</h2></b>
+            <h3>Generalizability to different unseen objects</h3>
+            <p> Experiments show that our approach can learn generalizable skills over different cabinets of the training sets and unseen test sets. 
+                We achieve an average success rate of <b>74% in training cabinets and a 51% in test cabinets</b> in the drawer opening task, significantly 
+                out-performing existing techniques (e.g., the baseline methods in ManiSkill-Learn obtain a best performance of 37% in training cabinets and a 12% in test cabinets). 
+            </p>
+
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="3">
+                        <source src="images/RobotManiSkill/hand_rob_1024.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        <!-- <h5 style="color: #a2a2a2; margin-bottom: 1em;">Total # of actions: 7 (task complete)</h5> -->
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="4">
+                        <source src="images/RobotManiSkill/hand_rob_1038.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        <!-- <h5 style="color: #a2a2a2; margin-bottom: 1em;">Total # of actions: 7 (task complete)</h5> -->
+                    </div>
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="5">
+                        <source src="images/RobotManiSkill/hand_rob_1045.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        <!-- <h5 style="color: #a2a2a2; margin-bottom: 1em;">Total # of actions: 7 (task complete)</h5> -->
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="6">
+                        <source src="images/RobotManiSkill/hand_rob_1063_fix.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        <!-- <h5 style="color: #a2a2a2; margin-bottom: 1em;">Total # of actions: 7 (task complete)</h5> -->
+                    </div>  
+                </div>
+            </div>
+
+            <!-- <h6 style="color: #a2a2a2; margin-bottom: 2em;">Note:</h6> -->
+
+            <h3>Motion Compliance</h3>
+            <p> We also compare the robotic motions produced by our method and pure RL, showing that robot singularities are avoided by our QP optimization.
+            </p>
+
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="1">
+                        <source src="images/RobotManiSkill/bc_bcq_demo.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        <!-- <h5 style="color: #a2a2a2; margin-bottom: 1em;">Total # of actions: 7 (task complete)</h5> -->
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="2">
+                        <source src="images/RobotManiSkill/ours_demo_fix.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        <!-- <h5 style="color: #a2a2a2; margin-bottom: 1em;">Total # of actions: 7 (task complete)</h5> -->
+                    </div>            
+                </div>
+            </div>
+
+            <!-- Add a container including four videos in it -->
+            <!-- <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><video class="image fit" controls="" data-video="9"><source src="images/videos/test-vpg-novel-04.mp4" type="video/mp4">Your browser does not support this video.</video></div>
+                    <div class="6u$"><video class="image fit" controls="" data-video="10"><source src="images/videos/test-vpg-novel-02.mp4" type="video/mp4">Your browser does not support this video.</video></div>
+                    <div class="6u"><video class="image fit" controls="" data-video="11"><source src="images/videos/test-vpg-novel-01.mp4" type="video/mp4">Your browser does not support this video.</video></div>
+                    <div class="6u$"><video class="image fit" controls="" data-video="12"><source src="images/videos/test-vpg-novel-03.mp4" type="video/mp4">Your browser does not support this video.</video></div>
+                </div>
+            </div> -->
+
+            <!-- <p style="margin-bottom: 1em;">For more quantitative evaluations and ablation studies (in both simulation and real-world settings), please check out our <a href="https://arxiv.org/abs/1803.09956">technical report</a>. There, we also explore some interesting questions like:
+            </p>
+            <ul>
+                <li>Is it possible to train pushing policies without any rewards? Can intrinsic rewards help?</li>
+                <li>Does long-term lookahead matter for planning VPG strategies in picking?</li>
+                <li>Is it possible to train VPG policies without ImageNet pre-training? How much do pre-trained weights influence sample complexity and performance?</li>
+                <li>Can we train VPG policies with only color information (no depth/height-from-bottom information)?</li>
+            </ul> -->
+
+            <!-- <h4>Failure Modes</h4> -->
+
+            <!-- <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><video class="image fit" controls="" data-video="13"><source src="images/videos/test-vpg-novel-05.mp4" type="video/mp4">Your browser does not support this video.</video></div>
+                    <div class="6u$"><video class="image fit" controls="" data-video="14"><source src="images/videos/test-vpg-blocks-02.mp4" type="video/mp4">Your browser does not support this video.</video></div>
+                </div>
+            </div> -->
+
+            <hr>
+            <b><h3>Contact</h3></b>
+            <p>Have any questions, please feel free to contact <a href="https://DeerKK.github.io/">Kai Lu</a></p>
+            <hr>
+
+            <div class="row">
+                <div class="6u 12u$(xsmall)">
+                    <p>March, 2023<br>
+                        Copyright &copy; <a href="https://DeerKK.github.io/">Kai Lu</a>
+                    </p>
+                </div>
+                <!-- Share the website -->
+                <!-- <div class="6u$ 12u$(xsmall)" style="text-align: right;">
+                    <ul class="icons"><li><a href="https://twitter.com/intent/tweet?text=Learning%20Synergies%20between%20Pushing%20and%20Grasping%20with%20Self-supervised Deep%20Reinforcement%20Learning%20http://vpg.cs.princeton.edu" class="icon fa-twitter"><span class="label">Twitter</span>&nbsp;Tweet</a></li>&nbsp;&nbsp;&nbsp;&nbsp;<li><a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fvpg.cs.princeton.edu%2F" class="icon fa-facebook-square"><span class="label">Facebook</span>&nbsp;&nbsp;Share</a></li></ul>
+                    <ul class="icons"></ul>
+                </div> -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Copyright -->
+    <!-- <footer id="footer">
+            <div class="inner">
+                <ul class="copyright">
+                    <p>Copyright &copy; 2019 Yixuan Wei</p>
+                </ul>
+            </div>
+        </footer> -->
+
+    <script src="js/project/main.js"></script>
+    <script src="js/project/util.js"></script>
+    <script src="js/project/skel.min.js"></script>
+    <script src="js/project/jquery.min.js"></script>
+    <script src="js/project/jquery.poptrox.min.js"></script>
+</body>
+
+</html>
