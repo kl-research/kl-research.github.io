@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+
+<!-- Ref:http://vpg.cs.princeton.edu/ -->
+
+
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Semi-Empirical Simulation of Learned Force Response Models for Heterogeneous Elastic Objects</title>
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+	<link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,900" rel="stylesheet">
+    <link rel="stylesheet" href="libs/font-awesome/css/font-awesome.min.css">
+    <!--??-->
+    <link href="css/project.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <div id="main" style="padding-bottom:1em; padding-top: 5em; width: 60em; max-width: 70em; margin-left: auto; margin-right: auto;">
+        <section id="four">
+            <h1 style="text-align: center; margin-bottom: 0;">
+                Semi-Empirical Simulation of Learned Force Response Models
+            </h1>
+            <h2 style="text-align: center;"> for Heterogeneous Elastic Objects</h2>
+            <br>
+            <section>
+                <div class="box alt" style="margin-bottom: 1em;">
+                    <h5 style="text-align: center;">      
+                            Yifan Zhu<sup>1</sup>, 
+                            Kai Lu<sup>2</sup>, 
+                            Kris Hauser<sup>1</sup>
+                </div>
+            </section>
+
+
+            <h6 style="color: #a2a2a2; margin-bottom: 2em;">
+                <sup>1</sup> Y. Zhu and K. Hauser are with the Departments of Computer Science, University of Illinois at Urbana-Champaign, IL, USA.
+                {yifan16, kkhauser}@illinois.edu}<br>
+                <sup>2</sup> K. Lu is with the Department of Automation, Tsinghua University, Beijing, China.
+                {lu-k16@mails.tsinghua.edu.cn}<br>
+            </h6>
+
+            <h4 style="text-align: center;"><a href="files/icra_final.pdf">paper link</a></h4>
+
+            <hr>
+            <br>
+            <b><h2 style="text-align: center;">Abstract</h2></b>
+
+            <p>
+                This paper presents a <i>semi-empirical method</i> for simulating contact with 
+                elastically <i>deformable objects</i> whose force response is learned using entirely data-driven models.  
+                A point-based surface representation and inhomogeneous, nonlinear force response model are learned 
+                from a robotic arm acquiring force-displacement curves from a small number of poking interactions.  
+                The simulator then estimates displacement and force response when the deformable object is in contact 
+                with an arbitrary rigid object. It does so by summing the expected forces at individual points through 
+                querying the learned point stiffness models as a function of their expected displacement. Experiments 
+                on a variety of challenging objects show that our approach learns force response with sufficient 
+                accuracy to generate plausible contact response for novel rigid objects.
+            </p>
+            
+            <!--div class="12u$"><a href=""><span class="image fit"><img src="images/RobotPoking/system_all.png" alt=""></span></a></div-->
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><a href=""><span class="image fit">
+                        <img src="images/RobotPoking/system_all.png" alt=""></span></a>
+                    </div>
+                    <div class="6u$"><a href=""><span class="image fit">
+                            <img src="images/RobotPoking/objects.png" alt=""></span></a>
+                    </div>           
+                </div>
+            </div>
+
+            <p>We evaluate this approach using <i>an experimental testbed</i> onsisting of a robot arm equipped 
+                with a RGB- D camera, a tapered probe attached at the end-effector, and a force-torque (F/T) sensor.
+                We include 5 different testing objects in our experiments, Sloth, Vest, Lamb, Shoe, and Bird.
+                Each object has varying stiffness across the object surface.
+            </p> 
+
+            <!--hr-->
+            
+            <!--b><h2 style="text-align: center;">Summary Video</h2></b-->
+            <!--div class="12u$">
+                <a href=""><span class="image fit"><img src="images/RobotPoking/summary_video.png" alt=""></span></a>
+            </div-->
+
+            <!--div class="12u$">
+                <video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="0">
+                    <source src="images/RobotGrasping/main.mp4" type="video/mp4">Your browser does not support this video.
+                    </video>
+                </div-->
+            <hr>
+            
+            <b><h2 style="text-align: center;">Workflow</h2></b>
+
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><a href=""><span class="image fit">
+                        <img src="images/RobotPoking/workflow.png" alt=""></span></a>
+                    </div>
+                    <div class="6u$"><a href=""><span class="image fit">
+                            <img src="images/RobotPoking/probes.png" alt=""></span></a>
+                    </div>           
+                </div>
+            </div>
+
+            <p>
+                The flow of our overall system is illustrated in the aboved image. The first stage of our system 
+                learns a visuo-tactile model of the deformable object using data. We use a wrist mounted RGB-D camera
+                to build a 3D point cloud, and poke a set of locations with a point probe to capture ground truth force 
+                response data. Then we use AutoML package from scikit-learn to perform the regression tasks. The second phase 
+                of our pipeline estimates reaction forces between the deformable object and a contacting rigid object.
+                The rigid object is represented as a 3D surface mesh M defined in the global frame. The contact detector 
+                determines whether it is in contact with the deformable object’s equilibrium surface model S, and if so, which 
+                points must be displaced to resolve the contact. The contact force solver then computes the 3D reaction force 
+                and torque and the deformed shape of the object.
+            </p>
+            
+
+            <hr>
+            <b><h2 style="text-align: center;">Example Results</h2></b>
+            <h3><i>Step 1: Point Deformation Model Learning</i></h3> 
+            <p>
+                Force predictions on the Lamb object, learned with different numbers of poking locations. 
+                Poking locations are indicated as circles, colored by the true force. d is set to be 0.5 mm. 
+                Because of camera bias, there is already significant amount of force at this depth.
+            </p>         
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="4u"><a href=""><span class="image fit">
+                        <img src="images/RobotPoking/pt2_d1.png" alt=""></span></a>
+                    </div>
+                    <div class="4u"><a href=""><span class="image fit">
+                            <img src="images/RobotPoking/pt5_d1.png" alt=""></span></a>
+                    </div>
+                    <div class="4u$"><a href=""><span class="image fit">
+                        <img src="images/RobotPoking/pt10_d1.png" alt=""></span></a>
+                    </div>
+                </div>
+            </div>
+            
+            <p>
+                Breakdown of learning curves for learning force response models. Regressors are trained over 
+                10 sampled subsets of the ground truth dataset, and plots show RMSE mean and variance across samples.
+            </p>
+
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><a href=""><span class="image fit">
+                        <img src="images/RobotPoking/models_rmse.png" alt=""></span></a>
+                    </div>
+                    <div class="6u$"><a href=""><span class="image fit">
+                            <img src="images/RobotPoking/objects_rmse.png" alt=""></span></a>
+                    </div>           
+                </div>
+            </div>
+            
+            <h3><i>Step 2: Semi-Empirical Simulator</i></h3>
+            <p>
+                Nominal Displacement Calculation: To calculate nominal displacements of the deformable 
+                object’s surface points we use collision detection and estimate penetration depths.
+            </p>
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="12u$"><a href=""><span class="image fit">
+                        <img src="images/RobotPoking/2probes.png" alt=""></span></a>
+                    </div>         
+                </div>
+            </div>
+
+            <p>
+                Force Solving: The force solver uses the nominal dis- placements calculated above combined 
+                with an indentation basis function to compute the actual displacements.
+            </p>
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><a href=""><span class="image fit">
+                        <img src="images/RobotPoking/calculate.png" alt=""></span></a>
+                    </div>
+                    <div class="6u$"><a href=""><span class="image fit">
+                            <img src="images/RobotPoking/line_cylinder.png" alt=""></span></a>
+                    </div>           
+                </div>
+            </div>
+            <p>    
+                <i>Results</i> show that our approach can learn a point deformation model that predicts force response 
+                 0.49N of root mean squared error (RMSE) over 5 test objects with 10 interactions each. When making 
+                 contact with novel rigid probes, which are a line-shaped paddle and a cylinder, our simulator’s force 
+                 prediction has 1.5 N RMSE. This accuracy is comparable to learned models obtained with the same 
+                 number of interactions.
+            </p>
+
+            <hr>
+            <b><h2 style="text-align: center;">Experiments</h2></b>
+            
+            <p>
+                <i>Simulation Visualization</i>: We illustrate our simulator by visualizing the simulation of a line probe poking straight at the Lamb
+                 based on Klampt and Open3D.
+            </p>
+
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><a href=""><span class="image fit">
+                        <img src="images/RobotPoking/demo_1.png" alt=""></span></a>
+                    </div>
+                    <div class="6u"><a href=""><span class="image fit">
+                            <img src="images/RobotPoking/simulation_nominal_field.JPG" alt=""></span></a>
+                    </div>
+                    <div class="6u$"><a href=""><span class="image fit">
+                            <img src="images/RobotPoking/simulation_actual.JPG" alt=""></span></a>
+                    </div>
+            </div>
+
+            <p>
+                <i>Application to a Packing Problem</i>: We consider a simple packing problem as an illustration 
+                of our approach. Given a rigid box with a deformable object (the Lamb) already packed, we 
+                would like to know if the robot can pack another rigid item into the box.
+            </p>
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><a href=""><span class="image fit">
+                        <img src="images/RobotPoking/planning_demo.png" alt=""></span></a>
+                    </div>
+                                         
+                    <div class="6u$"><a href=""><span class="image fit">
+                            <img src="images/RobotPoking/height_map.png" alt=""></span></a>
+                    </div> 
+                </div>
+            </div>
+            <p>
+                On average in this experiment, a contact reaction force query takes 0.086s. Each query consists 
+                of 0.0738s of collision detection, 0.010 s of querying the point model, and 0.0017 s of LCP solving 
+                by our simulator.
+            </p>
+
+            <hr>
+            <b><h3>Contact</h3></b>
+            <p>Have any questions, please feel free to contact <a href="https://github.com/backtodecember">Yifan Zhu</a>, <a href="https://DeerKK.github.io/">Kai Lu</a></p>
+            <hr>
+
+            <div class="row">
+                <div class="6u 12u$(xsmall)">
+                    <p>January, 2020<br>
+                        Copyright &copy; <a href="https://DeerKK.github.io/">Kai Lu</a>
+                    </p>
+                </div>
+                <!-- Share the website -->
+                <!-- <div class="6u$ 12u$(xsmall)" style="text-align: right;">
+                    <ul class="icons"><li><a href="https://twitter.com/intent/tweet?text=Learning%20Synergies%20between%20Pushing%20and%20Grasping%20with%20Self-supervised Deep%20Reinforcement%20Learning%20http://vpg.cs.princeton.edu" class="icon fa-twitter"><span class="label">Twitter</span>&nbsp;Tweet</a></li>&nbsp;&nbsp;&nbsp;&nbsp;<li><a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fvpg.cs.princeton.edu%2F" class="icon fa-facebook-square"><span class="label">Facebook</span>&nbsp;&nbsp;Share</a></li></ul>
+                    <ul class="icons"></ul>
+                </div> -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Copyright -->
+    <!-- <footer id="footer">
+            <div class="inner">
+                <ul class="copyright">
+                    <p>Copyright &copy; 2019 Yixuan Wei</p>
+                </ul>
+            </div>
+        </footer> -->
+
+    <script src="js/project/main.js"></script>
+    <script src="js/project/util.js"></script>
+    <script src="js/project/skel.min.js"></script>
+    <script src="js/project/jquery.min.js"></script>
+    <script src="js/project/jquery.poptrox.min.js"></script>
+</body>
+
+</html>

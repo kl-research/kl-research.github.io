@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+
+<!-- Ref:http://vpg.cs.princeton.edu/ -->
+
+
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Deep Reinforcement Learning for Robotic Pushing and Picking in Cluttered Environment</title>
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+	<link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,900" rel="stylesheet">
+    <link rel="stylesheet" href="libs/font-awesome/css/font-awesome.min.css">
+    <!--??-->
+    <link href="css/project.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <div id="main" style="padding-bottom:1em; padding-top: 5em; width: 60em; max-width: 70em; margin-left: auto; margin-right: auto;">
+        <section id="four">
+            <h1 style="text-align: center; margin-bottom: 0;">
+                Deep Reinforcement Learning for Robotic Pushing and Picking
+            </h1>
+            <h2 style="text-align: center;">in Cluttered Environment</h2>
+            <br>
+            <section>
+                <div class="box alt" style="margin-bottom: 1em;">
+                    <h5 style="text-align: center;">      
+                            Yuhong Deng<sup>*</sup>, 
+                            Xiangfeng Guo<sup>*</sup>, 
+                            Yixuan Wei<sup>*</sup>,
+			    <b>Kai Lu</b><sup>*</sup>,
+                            Bin Fang, 
+                            Di Guo, 
+                            Huaping Liu<sup>$</sup>, 
+                            Fuchun Sun</h5>
+                </div>
+            </section>
+
+            <!-- <div class="row 50% uniform" style="width: 80%;">
+                    <div class="1u" style="font-size: 0.8em; line-height: 1.5em; text-align: center;">Yuhong Deng <sup>*</sup></div>
+                    <div class="1u" style="font-size: 0.8em; line-height: 1.5em; text-align: center;">Xiangfeng Guo <sup>*</sup></div>
+                    <div class="1u" style="font-size: 0.8em; line-height: 1.5em; text-align: center;">Yixuan Wei <sup>*</sup></div>
+                    <div class="1u" style="font-size: 0.8em; line-height: 1.5em; text-align: center;">Kai Lu <sup>*</sup></div>
+                    <div class="1u" style="font-size: 0.8em; line-height: 1.5em; text-align: center;">Bin Fang </div>
+                    <div class="1u" style="font-size: 0.8em; line-height: 1.5em; text-align: center;">Di Guo </div>
+                    <div class="1u" style="font-size: 0.8em; line-height: 1.5em; text-align: center;">Fuchun Sun </div>
+                    <div class="1u$" style="font-size: 0.8em; line-height: 1.5em; text-align: center;">Huaping Liu <sup>$</sup></div>
+                </div> -->
+            <h6 style="color: #a2a2a2; margin-bottom: 2em;"><b><sup>*</sup> denotes equal contribution<br></b>
+                <sup>$</sup> Corresponding author: hpliu@tsinghua.edu.cn<br>
+                All authers are from Department of Computer Science and Technology, Tsinghua University, Beijing, China
+            </h6>
+            <h4 style="text-align: center;"><a href="files/IROS2019_Deep Reinforcement Learning for Robotic Pushing and Picking in Cluttered Environment.pdf">paper link</a></h4>
+
+            <hr>
+            <br>
+            <b><h2 style="text-align: center;">Abstract</h2></b>
+
+            <p>
+                In this paper, a novel robotic grasping system 
+                is established to automatically pick up objects in a cluttered
+                scene. A composite robotic hand which seamlessly combines a
+                suction cup and a gripper is firstly designed. When grasping
+                an object, the suction cup is used to lift the object from the
+                clutter and the gripper can grasp the object accordingly. And
+                then, resorting to the active exploration, a deep Q-Network
+                (DQN) is employed to help obtain a better affordance map,
+                which can provide pixel-wise lifting candidate points for the
+                suction cup. Besides, an effective metric is designed to evaluate
+                the current affordance map and the robotic hand will keep
+                actively exploring the environment until a good affordance map
+                is obtained. Experiments have demonstrated that the proposed
+                robotic grasping system is able to largely increase the success
+                rate when grasping objects in a cluttered scene.
+            </p>
+
+            <div class="12u$"><a href=""><span class="image fit"><img src="images/RobotGrasping/concept.png" alt=""></span></a></div>
+            
+            <!-- Insert a video and image in the same row -->
+            <!-- <div class="box alt" style="margin-bottom: 1em">
+                <div class="row 50% uniform">
+                    <div class="6u"><span class="image left" style="max-width: 100%; margin-right: 0; margin-bottom: 0;"><img src="images/RobotGrasping/concept.png" alt=""></span></div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="0"><source src="images/RobotGrasping/main.mp4" type="video/mp4">Your browser does not support this video.</video></div>
+                </div>
+            </div> -->
+
+            <p><i>Our grasping system</i> consists of a composite
+                    robotic hand for grasping, a UR5 manipulator for reaching the operation
+                    point, and a Kinect camera as a vision sensor. We introduce the strategy of
+                    active exploration applied on the environment for more promising grasping.  
+            </p>       
+            <hr>
+
+            <!-- about the paper link and the author infomation -->
+            <!-- <p style="margin-bottom: 1em;">Latest version (27 Mar 2018): <a href="https://arxiv.org/abs/1803.09956">arXiv:1803.09956 [cs.RO]</a> or <a href="paper.pdf">here</a>.<br>To appear at IEEE International Conference on Intelligent Robots and Systems (IROS) 2018<br><font color="4e79a7">★ Best Cognitive Robotics Paper Award Finalist, IROS ★</font></p>
+            <div class="12u$"><a href="https://arxiv.org/pdf/1803.09956.pdf"><span class="image fit" style="border: 1px solid; border-color: #888888;"><img src="images/paper-thumbnail.jpg" alt=""></span></a></div> -->
+
+            <!-- <sup>1</sup> Princeton University&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<sup>2</sup> Google&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<sup>3</sup> Massachusetts Institute of Technology -->
+
+            <!-- about the code link and the bibtex infomation -->
+            <!-- <div class="row">
+                <div class="6u 12u$(xsmall)">
+                    <h3>Code</h3>
+                    Code is available on <a href="https://github.com/andyzeng/visual-pushing-grasping">Github</a>. Includes:
+                    <ul>
+                        <li>Training/testing code (with PyTorch/Python)</li>
+                        <li>Simulation environments (with V-REP)</li>
+                        <li>Code for real-world setups (with UR5 robots)</li>
+                        <li>Pre-trained models and baselines</li>
+                        <li>Evaluation code (with Python)</li>
+                    </ul>
+                </div>
+                <div class="6u$ 12u$(xsmall)">
+                    <h3>Bibtex</h3>
+                    <pre><code>@article{zeng2018learning,
+                    title={Learning Synergies between Pushing and Grasping with Self-supervised Deep Reinforcement Learning},
+                    author={Zeng, Andy and Song, Shuran and Welker, Stefan and Lee, Johnny and Rodriguez, Alberto and Funkhouser, Thomas},
+                    journal={arXiv preprint arXiv:1803.09956},
+                    year={2018}
+                    }</code></pre>
+                </div>
+            </div> -->
+            
+            <b><h2 style="text-align: center;">Summary Video</h2></b>
+            <div class="12u$">
+                <video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="0">
+                    <source src="images/RobotGrasping/main.mp4" type="video/mp4">Your browser does not support this video.
+                    </video>
+                </div>
+            <hr>
+            <!-- Insert a video from youtube -->
+            <!-- <iframe id="match-video" width="880" height="495" style="margin-bottom: 2em; margin-left: auto; margin-right: auto; display:block;" src="https://www.youtube.com/embed/-OkyX7ZlhiU?rel=0" frameborder="0" allowfullscreen="">
+            </iframe> width="880" height="495"  -->
+            
+
+            <b><h2 style="text-align: center;">Pipeline</h2></b>
+
+            <div class="12u$"><a href=""><span class="image fit"><img src="images/RobotGrasping/oursystem.png" alt=""></span></a></div>
+
+            <p>
+                The pipeline of the proposed robotic grasping system is
+                illustrated in the aboved image. The RGB image and depth image
+                of the scene are obtained firstly. The affordance ConvNet
+                is used to calculate the affordance map based on both images. 
+                A metric <i>Phi</i> is proposed to evaluate the credibility
+                of the current affordance map. If <i>Phi</i> satisfies the metric, the
+                composite robotic hand will implement the grasp operation.
+                Otherwise, the obtained RGB image and depth image are fed
+                into the DQN, which guides the composite robotic hand to
+                give the environment an appropriate disturbance by pushing
+                objects. This process will be iterated until all the objects in
+                the environment are successfully picked.
+            </p>
+            <hr>
+            
+            <b><h2 style="text-align: center;">Deep Q-Network (DQN)</h2></b>
+
+            <div class="12u$"><a href=""><span class="image fit"><img src="images/RobotGrasping/DQN.png" alt=""></span></a></div>
+
+            <p>
+                
+            </p>
+            <hr>
+
+            <b><h2 style="text-align: center;">Traning Process</h2></b>
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="1">
+                        <source src="images/RobotGrasping/simul_min.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        <!-- <h5 style="color: #a2a2a2; margin-bottom: 1em;">Total # of actions: 7 (task complete)</h5> -->
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="2">
+                        <source src="images/RobotGrasping/simul_min.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        <!-- <h5 style="color: #a2a2a2; margin-bottom: 1em;">Total # of actions: 7 (task complete)</h5> -->
+                    </div>            
+                </div>
+            </div>
+
+            <hr>
+            <b><h2 style="text-align: center;">Example Results</h2></b>
+            <h3>Characteristics of Grasp Process</h3>
+            <p>Compared with other suction grasping systems, 
+                the proposed composite robotic hand uses the two fingers to hold the
+                object after the suction cup lifts the object, which increases the stability of the grasp:
+            </p>
+
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="1">
+                        <source src="images/RobotGrasping/grasp1.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        <!-- <h5 style="color: #a2a2a2; margin-bottom: 1em;">Total # of actions: 7 (task complete)</h5> -->
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="2">
+                        <source src="images/RobotGrasping/grasp2.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        <!-- <h5 style="color: #a2a2a2; margin-bottom: 1em;">Total # of actions: 7 (task complete)</h5> -->
+                    </div>            
+                </div>
+            </div>
+
+            <!-- <h6 style="color: #a2a2a2; margin-bottom: 2em;">Note:</h6> -->
+
+            <h3>Robotic Experiments</h3>
+            <p>We test our DQN model on real environment, including a Microsoft’s Kinect V2 camera as the image acquisition tool
+                to get the RGB image and depth image of the scene and a UR5 manipulator to carry our composite robotic hand.
+                We select 40 different objects to build different scenes for our robotic hand to grasp.
+            </p>
+
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="3">
+                        <source src="images/RobotGrasping/push1.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        <!-- <h5 style="color: #a2a2a2; margin-bottom: 1em;">Total # of actions: 7 (task complete)</h5> -->
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="4">
+                        <source src="images/RobotGrasping/push2.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        <!-- <h5 style="color: #a2a2a2; margin-bottom: 1em;">Total # of actions: 7 (task complete)</h5> -->
+                    </div>
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="5">
+                        <source src="images/RobotGrasping/push3.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        <!-- <h5 style="color: #a2a2a2; margin-bottom: 1em;">Total # of actions: 7 (task complete)</h5> -->
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="6">
+                        <source src="images/RobotGrasping/push4.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        <!-- <h5 style="color: #a2a2a2; margin-bottom: 1em;">Total # of actions: 7 (task complete)</h5> -->
+                    </div>  
+                </div>
+            </div>
+
+            <!-- Add a container including four videos in it -->
+            <!-- <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><video class="image fit" controls="" data-video="9"><source src="images/videos/test-vpg-novel-04.mp4" type="video/mp4">Your browser does not support this video.</video></div>
+                    <div class="6u$"><video class="image fit" controls="" data-video="10"><source src="images/videos/test-vpg-novel-02.mp4" type="video/mp4">Your browser does not support this video.</video></div>
+                    <div class="6u"><video class="image fit" controls="" data-video="11"><source src="images/videos/test-vpg-novel-01.mp4" type="video/mp4">Your browser does not support this video.</video></div>
+                    <div class="6u$"><video class="image fit" controls="" data-video="12"><source src="images/videos/test-vpg-novel-03.mp4" type="video/mp4">Your browser does not support this video.</video></div>
+                </div>
+            </div> -->
+
+            <!-- <p style="margin-bottom: 1em;">For more quantitative evaluations and ablation studies (in both simulation and real-world settings), please check out our <a href="https://arxiv.org/abs/1803.09956">technical report</a>. There, we also explore some interesting questions like:
+            </p>
+            <ul>
+                <li>Is it possible to train pushing policies without any rewards? Can intrinsic rewards help?</li>
+                <li>Does long-term lookahead matter for planning VPG strategies in picking?</li>
+                <li>Is it possible to train VPG policies without ImageNet pre-training? How much do pre-trained weights influence sample complexity and performance?</li>
+                <li>Can we train VPG policies with only color information (no depth/height-from-bottom information)?</li>
+            </ul> -->
+
+            <!-- <h4>Failure Modes</h4> -->
+
+            <!-- <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><video class="image fit" controls="" data-video="13"><source src="images/videos/test-vpg-novel-05.mp4" type="video/mp4">Your browser does not support this video.</video></div>
+                    <div class="6u$"><video class="image fit" controls="" data-video="14"><source src="images/videos/test-vpg-blocks-02.mp4" type="video/mp4">Your browser does not support this video.</video></div>
+                </div>
+            </div> -->
+
+            <hr>
+            <b><h3>Contact</h3></b>
+            <p>Have any questions, please feel free to contact <a href="https://DeerKK.github.io/">Kai Lu</a></p>
+            <hr>
+
+            <div class="row">
+                <div class="6u 12u$(xsmall)">
+                    <p>March, 2019<br>
+                        Copyright &copy; <a href="https://DeerKK.github.io/">Kai Lu</a>
+                    </p>
+                </div>
+                <!-- Share the website -->
+                <!-- <div class="6u$ 12u$(xsmall)" style="text-align: right;">
+                    <ul class="icons"><li><a href="https://twitter.com/intent/tweet?text=Learning%20Synergies%20between%20Pushing%20and%20Grasping%20with%20Self-supervised Deep%20Reinforcement%20Learning%20http://vpg.cs.princeton.edu" class="icon fa-twitter"><span class="label">Twitter</span>&nbsp;Tweet</a></li>&nbsp;&nbsp;&nbsp;&nbsp;<li><a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fvpg.cs.princeton.edu%2F" class="icon fa-facebook-square"><span class="label">Facebook</span>&nbsp;&nbsp;Share</a></li></ul>
+                    <ul class="icons"></ul>
+                </div> -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Copyright -->
+    <!-- <footer id="footer">
+            <div class="inner">
+                <ul class="copyright">
+                    <p>Copyright &copy; 2019 Yixuan Wei</p>
+                </ul>
+            </div>
+        </footer> -->
+
+    <script src="js/project/main.js"></script>
+    <script src="js/project/util.js"></script>
+    <script src="js/project/skel.min.js"></script>
+    <script src="js/project/jquery.min.js"></script>
+    <script src="js/project/jquery.poptrox.min.js"></script>
+</body>
+
+</html>
