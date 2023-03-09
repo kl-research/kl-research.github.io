@@ -46,7 +46,7 @@
                     <div class="1u" style="font-size: 0.8em; line-height: 1.5em; text-align: center;">Fuchun Sun </div>
                     <div class="1u$" style="font-size: 0.8em; line-height: 1.5em; text-align: center;">Huaping Liu <sup>$</sup></div>
                 </div> -->
-            <h6 style="color: #a2a2a2; margin-bottom: 2em;"><sup>1</sup> K. Lu, B. Wang, and A. Markham are with the Departments 
+            <h6 style="color: #a2a2a2; margin-bottom: 2em;"><sup>1</sup> K. Lu, B. Wang, and A. Markham are with the Department 
                 of Computer Science, University of Oxford, Oxford, UK. {kai.lu, bing.wang, andrew.markham}@cs.ox.ac.uk<br>
                 <sup>2</sup>  B. Yang is with vLAR Group, Department of Computing, Hong Kong Polytechnic University, HKSAR. bo.yang@polyu.edu.hk<br>
             </h6>
@@ -56,26 +56,36 @@
                 <a href="https://todo">code</a> -->
             </h4>
 
+
+            <hr>
+            <b><h2 style="text-align: center;">Example Results</h2></b>
+            
+            <div class="12u$">
+                <video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="0">
+                    <source src="images/RobotManiSkill/gen2multi.mov" type="video/mp4">Your browser does not support this video.
+                    </video>
+            </div>
+
             <hr>
             <!-- <br> -->
             <b><h2 style="text-align: center;">Abstract</h2></b>
 
             <p>
-                Recent works in robotic manipulation through reinforcement learning (RL) or imitation learning (IL) have shown potential 
-                for tackling a range of tasks e.g., opening a drawer or a cupboard. However, these techniques generalize poorly to unseen 
-                objects. We conjecture that this is due to the high-dimensional action space for joint control. In this paper, we take an 
-                alternative approach and separate the task of learning 'what to do' from 'how to do it' i.e., whole-body control. We pose 
-                the RL problem as one of determining the skill dynamics for a disembodied virtual manipulator interacting with articulated 
-                objects. The whole-body kinematic control is optimized to execute the high-dimensional joint motion to reach the 
-                goals in the workspace. It does so by solving a quadratic programming (QP) model with robotic singularity and kinematic 
-                constraints. Our experiments on manipulating complex articulated objects show that the proposed approach is more 
-                generalizable to unseen objects with large intra-class variations, outperforming previous approaches. The evaluation 
-                results indicate that our approach generates more compliant robotic motion and outperforms the pure RL and IL 
+                Robotic RL and IL have recently shown potential for tackling a range of tasks 
+                e.g., opening a drawer or a cupboard, but they generalize poorly to unseen objects. 
+                In this paper, we separate the task of learning 'what to do' from 'how to do it' i.e., whole-body control (WBC). 
+                We pose the RL problem as one of determining the skill dynamics for a disembodied virtual manipulator interacting with articulated 
+                objects. 
+                The QP-based WBC is optimized with singularity and kinematic constraints to execute the high-dimensional joint motion to reach the 
+                goals in the workspace. 
+                Experiments on manipulating complex articulated objects show that our approach is more 
+                generalizable to unseen objects with large intra-class variations. It also
+                generates more compliant robotic motion, and outperforms the pure RL and IL 
                 baselines in task success rates.
             </p>
             
             <center>
-                <div class="10u"><a href=""><span class="image fit"><img src="images/RobotManiSkill/decouple_core_webv0.png" alt=""></span></a></div>
+                <div class="9u"><a href=""><span class="image fit"><img src="images/RobotManiSkill/decouple_core_icrav32.png" alt=""></span></a></div>
             </center>
             
             <!-- Insert a video and image in the same row -->
@@ -130,6 +140,7 @@
                     </video>
                 </div>
             <hr>
+
             <!-- Insert a video from youtube -->
             <!-- <iframe id="match-video" width="880" height="495" style="margin-bottom: 2em; margin-left: auto; margin-right: auto; display:block;" src="https://www.youtube.com/embed/-OkyX7ZlhiU?rel=0" frameborder="0" allowfullscreen="">
             </iframe> width="880" height="495"  -->
@@ -171,10 +182,11 @@
             <hr>
 
             <b><h2 style="text-align: center;">Whole-body control</h2></b>
-            
-            <center>
-                <div class="10u"><a href=""><span class="image fit"><img src="images/RobotManiSkill/frame.png" alt=""></span></a></div>
-            </center>
+
+
+            <div class="11u"><a href=""><span class="image fit"><img src="images/RobotManiSkill/frame.png" alt=""></span></a></div>
+
+
             <p> <b>Coordinate system of our method.</b>  During the manipulation process, we optimize the joint-space actions of the 
                 robot to approximate its end-effector (EE) motions to the disembodied manipulator's trajectory. 
                 At every time step, the ego-centric point cloud observation is obtained from the three RGB-D cameras mounted on the robot.
@@ -184,22 +196,19 @@
                 <div class="10u"><a href=""><span class="image fit"><img src="images/RobotManiSkill/controller.png" alt=""></span></a></div>
             </center> -->
 
-            <div class="box alt">
-
-                <div class="row 50% uniform">
-                    <div class="6u"><a href=""><span class="image fit"><img src="images/RobotManiSkill/syn_m1.png" alt=""></span></a></div>
-                    <div class="6u$"><a href=""><span class="image fit"><img src="images/RobotManiSkill/syn_rob1.png" alt=""></span></a></div>
-                </div>
-               <p>
+            <div class="12u$">
+                <video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="0">
+                    <source src="images/RobotManiSkill/syn2.mov" type="video/mp4">Your browser does not support this video.
+                </video>
+            </div>
+            <p>
                 <b>QP-based whole-body controller. </b> We calculate the joint actions for whole-body control based on the robot's physical model. Our goal 
                 is to control the robot's EE to execute the learned skill dynamics in the same way as the disembodied manipulator. 
                </p>
-            </div>
-
 
 
             <hr>
-            <b><h2 style="text-align: center;">Example Results</h2></b>
+            <b><h2 style="text-align: center;">More Results</h2></b>
             <h3>Generalizability to different unseen objects</h3>
             <p> Experiments show that our approach can learn generalizable skills over different cabinets of the training sets and unseen test sets. 
                 We achieve an average success rate of <b>74% in training cabinets and a 51% in test cabinets</b> in the drawer opening task, significantly 
@@ -230,7 +239,7 @@
             <!-- <h6 style="color: #a2a2a2; margin-bottom: 2em;">Note:</h6> -->
 
             <h3>Motion Compliance</h3>
-            <p> We also compare the robotic motions produced by our method and pure RL, showing that robot singularities are avoided by our QP optimization.
+            <p> We also compare the robotic motions produced by our method and pure RL and IL, showing that robot singularities are avoided in most cases by our QP optimization.
             </p>
 
             <div class="box alt">
