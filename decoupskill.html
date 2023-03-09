@@ -52,8 +52,6 @@
             </h4>
 
             
-
-
             <div class="12u$">
                 <video class="image fit" style="margin-bottom: 0.5em;" controls="" muted autoplay="autoplay" loop="loop">
                     <source src="images/RobotManiSkill/gen2multi.mov" type="video/mp4">Your browser does not support this video.
@@ -69,7 +67,7 @@
             <div class="12u$">
                 <video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="0">
                     <source src="images/RobotManiSkill/icra_cm_kaivoi_18MB.mp4" type="video/mp4">Your browser does not support this video.
-                    </video>
+                </video>
             </div>
 
             <hr>
@@ -87,7 +85,7 @@
                 Experiments on manipulating complex articulated objects show that our approach is more 
                 generalizable to unseen objects with large intra-class variations. It also
                 generates more compliant robotic motion, and outperforms the pure RL and IL 
-                baselines in task success rates (<em><b>bottom panel</b></em>).
+                baselines in task success rates (<em><b>bottom panel</b></em>). <a href="#exp">quick view of example results (click)</a>
             </p>
 
             <center>
@@ -158,7 +156,7 @@
 
 
             <hr>
-            <b><h2 style="text-align: center;">Example Results</h2></b>
+            <b><h2 id="exp" style="text-align: center;">Example Results</h2></b>
             <h3>Generalizability to different unseen objects</h3>
             <p> Experiments show that our approach can learn generalizable skills over different cabinets of the training sets and unseen test sets. 
                 We achieve an average success rate of <b>74% on training cabinets and a 51% on test cabinets</b> in the drawer opening task, significantly 
@@ -191,7 +189,7 @@
             <!-- <h6 style="color: #a2a2a2; margin-bottom: 2em;">Note:</h6> -->
 
             <h3>Motion Compliance</h3>
-            <p> We also compare the robotic motions produced by our method and pure RL and IL (<em><b>left: BC, BCQ</b></em>), 
+            <p> We also compare the robotic motions produced by our method and pure RL and IL (<em><b>left: BC in 0:00~0:12, BCQ in 0:13~0:25</b></em>), 
                 showing that robot singularities are avoided in most cases by our method (<em><b>right: ours</b></em>).
             </p>
 
