@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Learning to Catch Reactive Objects with a Behavior Predictor</title>
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+	<link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,900" rel="stylesheet">
+    <link rel="stylesheet" href="libs/font-awesome/css/font-awesome.min.css">
+    <!--??-->
+    <link href="css/project.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <div id="main" style="padding-bottom:1em; padding-top: 5em; width: 60em; max-width: 80em; margin-left: auto; margin-right: auto;">
+        <section id="four">
+
+            <h1 style="text-align: center; margin-bottom: 0;">
+                Learning to Catch Reactive Objects with a Behavior Predictor
+            </h1>
+            <br>
+            <section>
+                <div class="box alt" style="margin-bottom: 1em;">
+                    <h5 style="text-align: center;">      
+                            Kai Lu<sup>1</sup>, 
+                            Jia-Xing Zhong<sup>1</sup>, 
+                            Bo Yang<sup>2</sup>, 
+                            Bing Wang<sup>2</sup>,
+                            Andrew Markham<sup>1</sup>
+                </div>
+            </section>
+
+
+
+            <h6 style="color: #a2a2a2; margin-bottom: 1em; text-align: center;"><sup>1</sup> K. Lu, J-X. Zhong, and A. Markham are with the Department 
+                of Computer Science, University of Oxford, Oxford, UK. <br>
+                <sup>2</sup>  B. Yang and B. Wang are with vLAR Group, Department of Computing, Hong Kong Polytechnic University, HKSAR. <br>
+            </h6>
+
+
+            <h4 style="text-align: center">
+                <a href="files/ICRA24_2572_MS_0917.pdf" >paper link</a>
+            </h4>
+
+            
+
+            <!-- <div class="12u$">
+                <video class="image fit" style="margin-bottom: 0.5em;" controls="" muted autoplay="autoplay" loop="loop">
+                    <source src="images/RobotManiSkill/gen2multi.mov" type="video/mp4">Your browser does not support this video.
+                </video>
+            </div> -->
+            <div class="box alt">
+                <div class="row 50% uniform">
+            <div class="12u$">
+                <video class="image fit" style="margin-bottom: 0.5em;" controls="" muted autoplay="autoplay" loop="loop">
+                    <source src="images/RobotCatching/room_demo.mp4" type="video/mp4">Your browser does not support this video.
+                </video>
+            </div>
+            <!-- <div class="12u$">
+                <video class="image fit" style="margin-bottom: 0.5em;" controls="" muted autoplay="autoplay" loop="loop">
+                    <source src="images/RobotCatching/wood_demo.mp4" type="video/mp4">Your browser does not support this video.
+                </video>
+            </div> -->
+            </div>
+            </div>
+
+            <!-- <div class="box alt">
+            <div class="row 50% uniform">
+                
+                <div class="6u$">
+                    <video class="image fit" style="margin-bottom: 0.5em;" controls="" muted autoplay="autoplay" loop="loop">
+                        <source src="images/RobotCatching/wood_demo.mp4" type="video/mp4">Your browser does not support this video.
+                    </video>
+                </div>
+            </div>
+            </div> -->
+
+            <hr>
+            
+
+            <b><h2 style="text-align: center;">Summary Video</h2></b>
+            
+            <div class="12u$">
+                <video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="0">
+                    <source src="images/RobotCatching/ICRA24_2572_VI_final.mp4" type="video/mp4">Your browser does not support this video.
+                </video>
+            </div>
+
+            <hr>
+
+            <!-- <br> -->
+            <b><h2 style="text-align: center;">Abstract</h2></b>
+            <p>
+                Tracking and catching moving objects is an important ability for robots in a dynamic world. Whilst some objects have 
+                highly predictable state evolution e.g., the ballistic trajectory of a tennis ball, reactive targets alter their behavior 
+                in response to motion of the manipulator. Reactive applications range from gently capturing living animals such as snakes or 
+                fish for biological investigations, to smoothly interacting with and assisting a person. Existing works for dynamic catching 
+                usually perform target prediction followed by planning, but seldom account for highly non-linear reactive behaviors. 
+                Alternatively, Reinforcement Learning (RL) based methods simply treat the target and its motion as part of the observation 
+                of the world-state, but perform poorly due to the weak reward signal. In this work, we blend the approach of an explicit, 
+                yet learned, target state predictor with RL. We further show how a tightly coupled predictor which ‘observes’ the state of 
+                the robot leads to significantly improved anticipatory action, especially with targets that seek to evade the robot following 
+                a simple policy. Experiments show that our method achieves an 86.4% (open plane area) and a 73.8% (room) success rate on evasive 
+                objects, outperforming monolithic reinforcement learning and other techniques. We also demonstrate the efficacy of our approach 
+                across varied targets and trajectories.  <a href="#exp">quick view of example results (click)</a>
+            </p>
+            
+            
+            <center>
+                <div class="12u$"><a href=""><span class="image fit"><img src="images/RobotCatching/methods_demo.png" alt="" align="top" style="margin-top: -0px;"></span></a></div>
+            </center>
+
+            <hr>
+            
+            <b><h2 style="text-align: center;">Pipeline</h2></b>
+            <p>
+                The left blue panel shows our object prediction model in the learning process, which involves both the current observations 
+                of the target and the robot states as inputs. The yellow panel shows our prediction-based RL policy,
+                where the high-level control model takes both current observations and predicted states as input to generate base moving commands. 
+                The arm will move automatically when the object is close to the robot. These high-level actions are then fed into low-level control modules 
+                to generate joint control signals for the robot.
+            </p>
+            
+            <center>
+                <div class="12u"><a href=""><span class="image fit"><img src="images/RobotCatching/arch6.png" alt="" align="top" style="margin-top: -0px;"></span></a></div>
+            </center>
+
+
+
+            <hr>
+
+            <b><h2 style="text-align: center;">Predictor Learning</h2></b>
+
+            <div class="box alt">
+                <p> In the predictor learning phase, the robot interacts with the object (<em><b>left</b></em>), observing its movements in response to the robotic actions. 
+                    <!-- This is highly efficient, and it will enhance the policy learning by providing key information for this task.  -->
+                    The evaluation of prediction is also shown in the video (<em><b>right</b></em>).
+                    
+                    <!-- During training process (<em><b>left</b></em>), the disembodied manipulator interactes with various cabinets. 
+                    Test on unseen cabinets (<em><b>right</b></em>): by interacting with more cabinets, the RL model shows a better understanding of the skill dynamics, 
+                    resulting in smoother and more reasonable motions. -->
+                </p>
+                <div class="row 50% uniform">
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="1">
+                        <source src="images/RobotCatching/train_interact_out.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="2">
+                        <source src="images/RobotCatching/train_eval_out.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>            
+                </div>
+            </div>
+
+            <div class="12u"><a href=""><span class="image fit"><img src="images/RobotCatching/notation.png" alt="" align="top" style="margin-top: -0px;"></span></a></div>
+
+            <hr>
+
+            <b><h2 style="text-align: center;">Catching Policy Learning</h2></b>
+
+            <p> During RL training, we notice that there are continuous improvements of our robotic agent 
+                (<em><b>left</b></em> is recorded during episode=250, <em><b>right</b></em> is episode=500), which is learning how to 
+                track and catch the object.
+            </p>
+            <div class="row 50% uniform">
+                <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="1">
+                    <source src="images/RobotCatching/ep250_cut.mp4" type="video/mp4">Your browser does not support this video.</video>
+                    
+                </div>
+                <div class="6u$"><video class="image fit" style="margin-bottom: 2em;" controls="" data-video="2">
+                    <source src="images/RobotCatching/ep500_cut.mp4" type="video/mp4">Your browser does not support this video.</video>
+                    
+                </div>            
+            </div>
+            <div class="12u"><a href=""><span class="image fit"><img src="images/RobotCatching/notation.png" alt="" align="top" style="margin-top: -0px;"></span></a></div>
+
+            <p> We also apply massively parallel training for our method (<em><b>left</b></em> is predictor learning, <em><b>right</b></em> is RL training).
+            </p>
+
+            <div class="row 50% uniform">
+                <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="0">
+                    <source src="images/RobotCatching/train_pred_paralell_cut.mp4" type="video/mp4">Your browser does not support this video.</video>
+                    
+                </div>
+                <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="">
+                    <source src="images/RobotCatching/train_para_rl_out.mp4" type="video/mp4">Your browser does not support this video.</video>
+                    
+                </div>            
+            </div>
+
+
+
+            <hr>
+            <b><h2 id="exp" style="text-align: center;">Example Results</h2></b>
+            <h3></h3>
+
+            <p> 
+                Experiments show that our approach can effectively learn catching policy for 
+                reactive objects at different speeds, achieving an overall success rate of 80%.
+                As shown here, the <em><b>upper</b></em> videos are low-speed (40%~50% of robot maximum speed) objects, 
+                the <em><b>bottom</b></em> videos are high-speed (80%~90% of robot maximum speed) objects.
+                <!-- Experiments show that our approach can learn generalizable skills over different cabinets of the training sets and unseen test sets. 
+                We achieve an average success rate of <b>74% on training cabinets and a 51% on test cabinets</b> in the drawer opening task, significantly 
+                out-performing existing techniques (e.g., the baseline methods in ManiSkill-Learn<sup><a href="https://github.com/haosulab/ManiSkill-Learn" style="text-decoration:none" >1</a></sup>
+                  obtain a best performance 
+                of <b>37% on training cabinets and a 12% on test cabinets</b>).  -->
+            </p>
+
+            <!-- <h3 style="text-align: center;">Reactive Objects</h3> -->
+
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="3">
+                        <source src="images/RobotCatching/low_vel1_out.mp4" type="video/mp4">Your browser does not support this video.</video>
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="4">
+                        <source src="images/RobotCatching/low_vel2_fix.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="5">
+                        <source src="images/RobotCatching/high_vel1_out.mp4" type="video/mp4">Your browser does not support this video.</video>
+                       
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="6">
+                        <source src="images/RobotCatching/high_vel2_out.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>  
+                </div>
+            </div>
+
+            <!-- <h6 style="color: #a2a2a2; margin-bottom: 2em;">Note:</h6> -->
+
+            <h3 style="text-align: center;">Versatility Across Behaviors</h3>
+            <p> We also show the generalizability of our method across various behaviors, including fixed circle path, bouncing off the wall,
+                 reactive behavior, and reactive behaviors with small added (random) noises.
+            </p>
+            
+            <div class="12u"><a href=""><span class="image fit"><img src="images/RobotCatching/behaviors.png" alt="" align="top" style="margin-top: -0px;"></span></a></div>
+
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="3">
+                        <source src="images/RobotCatching/circ.mp4" type="video/mp4">Your browser does not support this video.</video>
+                       
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="4">
+                        <source src="images/RobotCatching/wall.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="5">
+                        <source src="images/RobotCatching/react.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="6">
+                        <source src="images/RobotCatching/rand_re.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>  
+                </div>
+            </div>
+
+            <h3 style="text-align: center;">Adaptability in Diverse Environments</h3>
+            <p> We further show the adaptability of our method in diverse environments when combining a collision avoidance module. 
+                The robot is then able to catch the moving objects in these challenging areas.  
+            </p>
+            
+            <!-- <div class="12u$">
+                <video class="image fit" style="margin-bottom: 0.5em;" controls="" >
+                    <source src="images/RobotCatching/room_demo.mp4" type="video/mp4">Your browser does not support this video.
+                </video>
+            </div>
+
+            <div class="12u$">
+                <video class="image fit" style="margin-bottom: 0.5em;" controls="" >
+                    <source src="images/RobotCatching/wood_demo.mp4" type="video/mp4">Your browser does not support this video.
+                </video>
+            </div> -->
+
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="3">
+                        <source src="images/RobotCatching/r1out.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="4">
+                        <source src="images/RobotCatching/r2out.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="5">
+                        <source src="images/RobotCatching/r3out.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="6">
+                        <source src="images/RobotCatching/r4out.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>  
+                </div>
+            </div>
+
+            <p>The <em><b>upper</b></em> four videos show room environments, 
+                the <em><b>below</b></em> four videos show woods environments.</p>
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="3">
+                        <source src="images/RobotCatching/w1out.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="4">
+                        <source src="images/RobotCatching/w4out.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="5">
+                        <source src="images/RobotCatching/w2out.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="6">
+                        <source src="images/RobotCatching/w3out.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>  
+                </div>
+            </div>
+
+            <hr>
+            <b><h3>Contact</h3></b>
+            <p>Have any questions, please feel free to contact <a href="https://DeerKK.github.io/">Kai Lu</a></p>
+            <hr>
+
+            <div class="row">
+                <div class="6u 12u$(xsmall)">
+                    <p>September, 2023<br>
+                        Copyright &copy; <a href="https://DeerKK.github.io/">Kai Lu</a>
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+<!-- 
+    <script src="js/project/main.js"></script>
+    <script src="js/project/util.js"></script>
+    <script src="js/project/skel.min.js"></script>
+    <script src="js/project/jquery.min.js"></script>
+    <script src="js/project/jquery.poptrox.min.js"></script> -->
+</body>
+
+</html>
