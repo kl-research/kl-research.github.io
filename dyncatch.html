@@ -57,10 +57,13 @@
             <div class="box alt">
                 <div class="row 50% uniform">
             <div class="12u$">
-                <video class="image fit" style="margin-bottom: 0.5em;" controls="" muted autoplay="autoplay" loop="loop">
+                <video class="image fit" style="margin-bottom: 0em;" controls="" muted autoplay="autoplay" loop="loop">
                     <source src="images/RobotCatching/room_demo.mp4" type="video/mp4">Your browser does not support this video.
                 </video>
             </div>
+            <center>
+            <div class="9u" ><a href=""><span class="image fit"><img src="images/RobotCatching/notation2.png" alt="" align="top" style="margin-top: -0px;"></span></a></div>
+            </center>
             <!-- <div class="12u$">
                 <video class="image fit" style="margin-bottom: 0.5em;" controls="" muted autoplay="autoplay" loop="loop">
                     <source src="images/RobotCatching/wood_demo.mp4" type="video/mp4">Your browser does not support this video.
@@ -232,6 +235,27 @@
                     </div>  
                 </div>
             </div>
+
+            <!-- <h3 style="text-align: center;">Comparison</h3> -->
+            <p>
+                Comparison: While ours (<em><b>above</b></em>) shows effectiveness in the catching task, the Monolithic RL 
+                method (<em><b>left</b></em>) without explict prediction often lets objects
+                escape catching range. Moreover, the Vanilla Predictor + RL method (<em><b>right</b></em>) where its predictor 
+                doesn't account for non-linear reactive behavior frequently results in failed catching attempts due to 
+                incorrect predictions.
+            </p>
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="3">
+                        <source src="images/RobotCatching/e2e_out.mp4" type="video/mp4">Your browser does not support this video.</video>
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="4">
+                        <source src="images/RobotCatching/vani_p_out.mp4" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>
+                </div>
+            </div>
+
 
             <!-- <h6 style="color: #a2a2a2; margin-bottom: 2em;">Note:</h6> -->
 
