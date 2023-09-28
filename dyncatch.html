@@ -97,20 +97,32 @@
             <hr>
 
             <!-- <br> -->
-            <b><h2 style="text-align: center;">Abstract</h2></b>
+            <b><h2 style="text-align: center;">Abstract & Method</h2></b>
             <p>
-                Tracking and catching moving objects is an important ability for robots in a dynamic world. Whilst some objects have 
-                highly predictable state evolution e.g., the ballistic trajectory of a tennis ball, reactive targets alter their behavior 
-                in response to motion of the manipulator. Reactive applications range from gently capturing living animals such as snakes or 
-                fish for biological investigations, to smoothly interacting with and assisting a person. Existing works for dynamic catching 
-                usually perform target prediction followed by planning, but seldom account for highly non-linear reactive behaviors. 
+                Tracking and catching reactive objects is an important ability for robots in a dynamic world, where these targets 
+                will alter their behavior in response to motion of the manipulator. Reactive applications 
+                range from gently capturing living animals to smoothly assisting a person.  
+                
+                <!-- Whilst some objects have 
+                highly predictable state evolution e.g., the ballistic trajectory of a tennis ball, Reactive targets alter their behavior 
+                in response to motion of the manipulator. 
+                
+                Reactive applications range from gently capturing living animals such as snakes or 
+                fish for biological investigations, to smoothly interacting with and assisting a person.  -->
+                
+                <!-- Existing works for dynamic catching usually perform target prediction followed by planning, but seldom account for 
+                highly non-linear reactive behaviors. 
                 Alternatively, Reinforcement Learning (RL) based methods simply treat the target and its motion as part of the observation 
-                of the world-state, but perform poorly due to the weak reward signal. In this work, we blend the approach of an explicit, 
+                of the world-state, but perform poorly due to the weak reward signal.  -->
+                
+                In this work, we blend the approach of an explicit, 
                 yet learned, target state predictor with RL. We further show how a tightly coupled predictor which ‘observes’ the state of 
                 the robot leads to significantly improved anticipatory action, especially with targets that seek to evade the robot following 
-                a simple policy. Experiments show that our method achieves an 86.4% (open plane area) and a 73.8% (room) success rate on evasive 
+                a simple policy. 
+                <!-- Experiments show that our method achieves an 86.4% (open plane area) and a 73.8% (room) success rate on evasive 
                 objects, outperforming monolithic reinforcement learning and other techniques. We also demonstrate the efficacy of our approach 
-                across varied targets and trajectories.  <a href="#exp">quick view of example results (click)</a>
+                across varied targets and trajectories.  -->
+                 <a href="#exp">Example results (click)</a>.
             </p>
             
             
@@ -131,7 +143,7 @@
 
             <hr>
             
-            <b><h2 style="text-align: center;">Pipeline</h2></b>
+            <!-- <b><h2 style="text-align: center;">Pipeline</h2></b>
             <p>
                 The left blue panel shows our object prediction model in the learning process, which involves both the current observations 
                 of the target and the robot states as inputs. The yellow panel shows our prediction-based RL policy,
@@ -146,9 +158,9 @@
 
 
 
-            <hr>
+            <hr> -->
 
-            <b><h2 style="text-align: center;">Predictor Learning</h2></b>
+            <b><h2 style="text-align: center;">Training Process - Predictor</h2></b>
 
             <div class="box alt">
                 <p> In the predictor learning phase, the robot interacts with the object (<em><b>left</b></em>), observing its movements in response to the robotic actions. 
@@ -175,7 +187,7 @@
 
             <hr>
 
-            <b><h2 style="text-align: center;">Catching Policy Learning</h2></b>
+            <b><h2 style="text-align: center;">Training Process - Prediction-Based RL</h2></b>
 
             <p> During RL training, we notice that there are continuous improvements of our robotic agent 
                 (<em><b>left</b></em> is recorded during episode=250, <em><b>right</b></em> is episode=500), which is learning how to 
