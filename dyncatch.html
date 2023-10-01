@@ -208,7 +208,9 @@
             </div>
             <div class="12u"><span class="image fit"><img src="images/RobotCatching/notation.png" alt="" align="top" style="margin-top: -0px;"></span></div>
 
-            <p> We also apply massively parallel training for our method (<em><b>left</b></em> is predictor learning, <em><b>right</b></em> is RL training).
+            <p> We also apply massively parallel training for our 
+                method (<em><b>left</b></em> is predictor learning, <em><b>right</b></em> is RL training) in 
+                Isaac Gym<sup><a href="https://github.com/NVIDIA-Omniverse/IsaacGymEnvs" style="text-decoration:none" >1</a></sup>.
             </p>
 
             <div class="row 50% uniform">
@@ -231,8 +233,8 @@
             <p> 
                 Experiments show that our approach can effectively learn catching policy for 
                 reactive objects at different speeds, achieving an overall success rate of 80%.
-                As shown here, the <em><b>upper</b></em> videos are low-speed (40%~50% of robot maximum speed) objects, 
-                the <em><b>bottom</b></em> videos are high-speed (80% of robot maximum speed) objects.
+                As shown here, the <em><b>upper</b></em> two videos are low-speed (40%~50% of robot's maximum speed) objects, 
+                the <em><b>bottom</b></em> two videos are high-speed (80% of robot's maximum speed) objects.
                 <!-- Experiments show that our approach can learn generalizable skills over different cabinets of the training sets and unseen test sets. 
                 We achieve an average success rate of <b>74% on training cabinets and a 51% on test cabinets</b> in the drawer opening task, significantly 
                 out-performing existing techniques (e.g., the baseline methods in ManiSkill-Learn<sup><a href="https://github.com/haosulab/ManiSkill-Learn" style="text-decoration:none" >1</a></sup>
@@ -264,10 +266,10 @@
 
             <!-- <h3 style="text-align: center;">Comparison</h3> -->
             <p>
-                Comparison: While ours (<em><b>above</b></em>) shows effectiveness in the catching task, the Monolithic RL 
-                method (<em><b>left</b></em>) without explict prediction often lets objects
-                escape catching range. Moreover, the Vanilla Predictor + RL method (<em><b>right</b></em>) where its predictor 
-                doesn't account for non-linear reactive behavior frequently results in failed catching attempts due to 
+                Comparison: while our method (<em><b>above</b></em>) shows effectiveness in the catching task, the Monolithic RL 
+                method (<em><b>below left</b></em>) without explict prediction often lets objects
+                escape catching range. Moreover, the Vanilla Predictor + RL method (<em><b>below right</b></em>) where its predictor 
+                doesn't account for robot's self actions and object's non-linear reactive behaviors frequently results in failed catching attempts due to 
                 incorrect predictions.
             </p>
             <div class="box alt">
@@ -287,7 +289,7 @@
 
             <h3 style="text-align: center;">Versatility Across Behaviors</h3>
             <p> We also show the generalizability of our method across various behaviors, including fixed circle path, bouncing off the wall,
-                 reactive behavior, and reactive behaviors with small added (random) noises.
+                 reactive behavior, and reactive behaviors with small added (random) noises (<em><b>from left to right, from top to bottom</b></em>).
             </p>
             
             <div class="12u"><span class="image fit"><img src="images/RobotCatching/behaviors.png" alt="" align="top" style="margin-top: -0px;"></span></div>
@@ -351,7 +353,7 @@
                 </div>
             </div>
 
-            <p>The <em><b>upper</b></em> four videos show room environments, 
+            <p>The <em><b>above</b></em> four videos show room environments, 
                 the <em><b>below</b></em> four videos show woods environments.</p>
             <div class="box alt">
                 <div class="row 50% uniform">
