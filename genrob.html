@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Learning to Catch Reactive Objects with a Behavior Predictor</title>
+    <title>Learning Generalizable Manipulation Policy with Adapter-Based Parameter Fine-Tuning</title>
 	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
 	<link rel="icon" href="favicon.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,900" rel="stylesheet">
@@ -39,10 +39,33 @@
             
             <h4 style="text-align: center">
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                 <a href="files/ICRA2024_Kai_v2.pdf" >Paper Link</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                 <a href="files/IROS_24_GeneralRobot_v1 (19).pdf" >Paper Link</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                  <a href="" >Code & Data (Coming Soon)</a>
             </h4>
-            
+
+            <center>
+                <div class="9u$"><span class="image fit"><img src="images/GenRob/teaser4.png" alt="" align="top" style="margin-top: -0px;"></span></div>
+            </center>
+            <p>
+                This study investigates the use of adapters in reinforcement learning for robotic skill generalization 
+                across multiple robots and tasks. 
+                <!-- Traditional methods are typically reliant on robot-specific retraining
+                 and face challenges such as efficiency and adaptability, particularly when scaling to robots with varying 
+                 kinematics.  -->
+                 We propose an alternative approach where a disembodied (virtual) hand manipulator learns a 
+                 task (i.e., an abstract skill) and then transfers it to various robots with different kinematic 
+                 constraints without retraining the entire model (i.e., the concrete, physical implementation 
+                 of the skill). 
+                 <!-- Whilst adapters are commonly used in other domains with strong supervision available,
+                  we show how weaker feed- back from robotic control can be used to optimize task execution by
+                   preserving the abstract skill dynamics whilst adapting to new robotic domains. -->
+                    <!-- We demonstrate the effectiveness of our method with experiments conducted in 
+                    the SAPIEN ManiSkill environment, showing improvements in generalization and task success rates.  -->
+                 <a href="#exp">Example results in simulation & real (click)</a>.
+            </p>
+
+            <hr>
+
             <b><h2 style="text-align: center;">Overview Video</h2></b>
             
             <div class="12u$">
@@ -52,6 +75,120 @@
             </div>
 
             <hr>
+
+            <b><h2 id="exp" style="text-align: center;">Example Results</h2></b>
+            <h3></h3>
+            <p> 
+                We present videos of our experiment results in both simulation and real environment. More details are available in our paper.
+            </p>
+
+            <h3 style="text-align: center;">Generalization across robots</h3>
+            
+            <p> 
+                We present generalizing a learned skill i.e., opening a drawer or a cupboard, to different robotic platforms, including HSR, AliengoZ1, and A2Single.
+            </p>
+
+            <div class="12u"><span class="image fit"><img src="images/GenRob/coordinate3_1.png" alt="" align="top" style="margin-top: -0px;"></span></div>
+            
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="3">
+                        <source src="images/GenRob/handff.mov" type="video/mp4">Your browser does not support this video.</video>
+                       
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="4">
+                        <source src="images/GenRob/a2_2ff.mov" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="5">
+                        <source src="images/GenRob/aliengoff.mov" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="6">
+                        <source src="images/GenRob/hsrff.mov" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>  
+                </div>
+            </div>
+
+            <h3 style="text-align: center;">Generalization across tasks</h3>
+            <p> 
+                We present generalizing a learned skill to different tasks, such as from drawer opening to door opening and chair pushing.
+            </p>
+
+            <div class="12u"><span class="image fit"><img src="images/GenRob/taskgen3.png" alt="" align="top" style="margin-top: -0px;"></span></div>
+
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="3">
+                        <source src="images/GenRob/doorff1.mov" type="video/mp4">Your browser does not support this video.</video>
+                       
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="4">
+                        <source src="images/GenRob/doorff2.mov" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="5">
+                        <source src="images/GenRob/chairff1.mov" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="6">
+                        <source src="images/GenRob/chairff2.mov" type="video/mp4">Your browser does not support this video.</video>
+                        
+                    </div>  
+                </div>
+            </div>
+
+            <h3 style="text-align: center;">Real experiments</h3>
+            
+            <p>
+                In the real experiments, we perform the drawer opening task and chair pushing task with a real HSR robot.
+            </p>
+
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="12u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="3">
+                        <source src="images/GenRob/open_drawer_10x.mp4" type="video/mp4">Your browser does not support this video.</video>
+                    </div>
+                    <div class="6u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="5">
+                        <source src="images/GenRob/drawer_terminal_rviz_10x_2.mov" type="video/mp4">Your browser does not support this video.</video>
+                       
+                    </div>
+                    <div class="6u$"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="6">
+                        <source src="images/GenRob/drawer_terminal_term_10x.mov" type="video/mp4">Your browser does not support this video.</video>
+                    </div>  
+                </div>
+            </div>
+
+            <!-- <h3 style="text-align: center;">Comparison</h3> -->
+            <p>
+              The below video shows the chair pushing task.
+            </p>
+            <div class="box alt">
+                <div class="row 50% uniform">
+                    <div class="12u"><video class="image fit" style="margin-bottom: 0.5em;" controls="" data-video="3">
+                        <source src="images/GenRob/chair_10x.mp4" type="video/mp4">Your browser does not support this video.</video>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- <h6 style="color: #a2a2a2; margin-bottom: 2em;">Note:</h6> -->
+
+           
+            <hr>
+            <b><h3>Contact</h3></b>
+            <p>Have any questions, please feel free to contact <a href="https://DeerKK.github.io/">Kai Lu</a></p>
+            <hr>
+
+            <div class="row">
+                <div class="6u 12u$(xsmall)">
+                    <p>March, 2024<br>
+                        Copyright &copy; <a href="https://DeerKK.github.io/">Kai Lu</a>
+                    </p>
+                </div>
+            </div>
+        </section>
 
     </div>
 <!-- 
