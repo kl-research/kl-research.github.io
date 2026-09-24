@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="KitchenVLM: Vision-Language Corrections for Robotic Execution of Human Tasks. Project page.">
+<meta name="author" content="Kai Lu, Chenyang Ma, Ioannis Havoutis, Chiori Hori, Diego Romeres">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light">
+<title>KitchenVLM | Vision-Language Corrections</title>
+<link rel="stylesheet" href="style.css">
+<script src="media.js" defer></script>
+<script src="script.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header"><nav class="wrap nav" aria-label="Main navigation"><a class="wordmark" href="#main">KitchenVLM</a><div class="nav-links"><a href="#overview">Abstract</a><a href="#method">Method</a><a href="#results">Simulation</a><a href="#real-world">Real robot</a><a href="#demos">Demos</a></div></nav></header>
+<main id="main" class="wrap">
+<section class="paper-header" aria-labelledby="title">
+<h1 id="title">KitchenVLM: Vision-Language Corrections<br class="title-break"> for Robotic Execution of Human Tasks</h1>
+<p class="authors">Kai Lu<sup>1</sup> &nbsp;·&nbsp; Chenyang Ma<sup>1</sup> &nbsp;·&nbsp; Ioannis Havoutis<sup>1</sup> &nbsp;·&nbsp; Chiori Hori<sup>2</sup> &nbsp;·&nbsp; Diego Romeres<sup>2</sup></p>
+<p class="affiliations"><sup>1</sup>University of Oxford &nbsp;&nbsp; <sup>2</sup>Mitsubishi Electric Research Laboratories</p>
+<p class="lead">An agentic feedback loop in which vision-language models compare the robot's execution<br class="title-break"> with the human video and correct the plan.</p>
+<div class="paper-links"><a href="#method">Method overview</a><a href="#results">Simulation results</a><a href="#real-world">Real-robot results</a><a href="#demos">Videos</a></div>
+</section>
+<section id="overview" class="section abstract"><h2>Abstract</h2>
+<p>Human instructional videos describe long-horizon tasks such as cooking, but translating the extracted steps into robot-executable actions remains challenging, as the robot's workspace, objects, and skills differ from those in the video. We present <strong>KitchenVLM</strong>, a multimodal framework that corrects such plans through an agentic feedback loop, where vision-language models (VLMs) serve as evaluators and planners.</p>
+<p>KitchenVLM maps the steps extracted by a multimodal LLM to robot skills, executes them while recording observations, and compares the robot's observations with keyframes of the human video. The detected mismatches in object state, action feasibility, and sequence logic are passed to an LLM planner, which inserts, replaces, or reorders steps and recomposes a corrected plan. We evaluate KitchenVLM on YouCook2 cooking videos in simulation and on a real robot arm, where the corrected plans are more complete and executable than the initial ones, and both the textual steps and the human keyframes contribute to the correction.</p>
+</section>
+<section id="method" class="section"><h2>Method</h2>
+<p class="section-intro">KitchenVLM is a robot-in-the-loop framework. It grounds the steps of a human video into an initial robot plan, executes the plan while collecting feedback, and corrects it by comparing the robot's observations with the human video.</p>
+<figure class="framework"><a href="assets/images/framework.webp" target="_blank" rel="noopener" aria-label="Open figure at full size"><img src="assets/images/framework.webp" loading="lazy" alt="KitchenVLM framework: a multimodal LLM extracts steps from a human video, object and action mapping produce the initial plan, the robot executes it, and a VLM evaluator and LLM planner compare keyframes with robot observations to produce a corrected plan; three robot tasks are shown on the right." width="2200" height="912"></a><figcaption><strong>Framework overview.</strong> Top: steps extracted from the human video are grounded into robot-executable actions. Bottom: keyframes are compared with robot observations by a VLM evaluator, and an LLM planner produces a corrected action sequence (Fig. 2).</figcaption></figure>
+<div class="layers">
+<article class="layer"><h3><span class="layer-index timing">01</span> Mapping</h3><p class="component">Object and action mapping</p><p>Each human object is mapped to the most similar robot object by LLM-scored similarity, and each human verb to a robot skill by a deterministic lookup (e.g., <em>add</em> → <em>place</em>), giving the initial plan <em>A</em><sub>1</sub>.</p></article>
+<article class="layer"><h3><span class="layer-index skills">02</span> Execution</h3><p class="component">Robot execution with feedback collection</p><p>The robot, simulated or physical, executes <em>A</em><sub>1</sub> and records an observation image and the execution outcome after every step, e.g., whether the step was executed and what the gripper holds.</p></article>
+<article class="layer"><h3><span class="layer-index precision">03</span> Correction</h3><p class="component">VLM evaluation and LLM replanning</p><p>A VLM compares each robot observation with a keyframe of the human video and reports the domain gap. An LLM corrects each step window, then recomposes the sub-sequences into the corrected plan <em>A</em><sub>2</sub>.</p></article>
+</div>
+<p class="method-note"><strong>Sources of mismatch:</strong> object condition mismatch (e.g., a whole vs. a sliced tomato, a closed vs. an open pot), robotic action limitation (a step is ambiguous or not a robot skill), and logical inconsistency (e.g., placing an object before picking it with a single arm).</p>
+</section>
+<section id="results" class="section"><h2>Simulation experiments</h2>
+<p class="section-intro">Simulation runs in RoboCasa with a Franka Panda arm on 867 YouCook2 videos whose actions are covered by the robot's skills. GPT-4o serves every LLM and VLM function.</p>
+<div class="result-pair data-pair"><div><h3>Human videos and robot skills</h3><p>Human cooking steps use a long-tailed vocabulary of verbs. The five most frequent verbs cover 92% of all steps; the remaining 99 verbs account for 8.0%. The robot's skill library covers only a small part of this vocabulary, which motivates mapping followed by correction.</p></div><div class="figure-pair"><figure><img src="assets/images/youcook-examples.webp" loading="lazy" alt="Example frames of human cooking videos from YouCook2." width="592" height="462"></figure><figure><img src="assets/images/verb-frequency.webp" loading="lazy" alt="Frequency of the five most common verbs: pick 38.1%, place 34.9%, add 12.8%, stir 4.1%, cut 2.0%." width="412" height="322"></figure></div></div>
+<h3 class="subsection">Effectiveness of correction and ablation</h3>
+<p>LLM and VLM judges score plans on a five-level scale from Reject (0) to Accept (1). Both judges rate the corrected plan higher than the initial plan, also when only executable plans are scored (VLM*). Removing the textual steps (w/o S) or the human keyframes (w/o I) lowers every score.</p>
+<div class="table-scroll" role="region" aria-label="Judge scores table" tabindex="0"><table><caption>Judge scores · Paper Table 1 · *: only successfully executable plans</caption><thead><tr><th scope="col">Judge</th><th scope="col"><em>A</em><sub>1</sub> (initial)</th><th scope="col"><em>A</em><sub>2</sub> w/o S</th><th scope="col"><em>A</em><sub>2</sub> w/o I</th><th scope="col"><em>A</em><sub>2</sub> (ours)</th></tr></thead><tbody>
+<tr><th scope="row">LLM (G, A)</th><td>0.45</td><td>0.25</td><td>0.56</td><td class="highlight">0.67</td></tr>
+<tr><th scope="row">VLM (G, I<sub>0</sub>, A)</th><td>0.35</td><td>0.30</td><td>0.58</td><td class="highlight">0.65</td></tr>
+<tr><th scope="row">VLM* (G, I<sub>0:n</sub>)</th><td>0.36</td><td>0.46</td><td>0.53</td><td class="highlight">0.64</td></tr>
+<tr><th scope="row">VLM* (G, I<sub>0:n</sub>, A)</th><td>0.38</td><td>0.28</td><td>0.49</td><td class="highlight">0.62</td></tr>
+</tbody></table></div>
+<div class="table-row">
+<div class="table-scroll" role="region" aria-label="Predicate fulfillment table" tabindex="0"><table><caption>Predicate fulfillment, assuming perfect execution · Table 2</caption><thead><tr><th scope="col">Plan</th><th scope="col">Burger</th><th scope="col">Sandwich</th><th scope="col">Fried chicken</th><th scope="col">Avg.</th></tr></thead><tbody>
+<tr><th scope="row"><em>A</em><sub>1</sub> (initial)</th><td>0.52</td><td>0.53</td><td>0.44</td><td>0.50</td></tr>
+<tr><th scope="row"><em>A</em><sub>2</sub> (ours)</th><td class="highlight">0.61</td><td class="highlight">0.63</td><td class="highlight">0.57</td><td class="highlight">0.61</td></tr>
+</tbody></table></div>
+<div class="table-scroll" role="region" aria-label="Human evaluation table" tabindex="0"><table><caption>Similarity to AMT-corrected plans · Table 3 · TCR: task completion ratio</caption><thead><tr><th rowspan="2" scope="col"></th><th colspan="3" scope="colgroup">All 867 clips</th><th colspan="3" scope="colgroup">357 aligned clips</th></tr><tr><th scope="col">BLEU-4</th><th scope="col">METEOR</th><th scope="col">TCR</th><th scope="col">BLEU-4</th><th scope="col">METEOR</th><th scope="col">TCR</th></tr></thead><tbody>
+<tr><th scope="row">Ours</th><td class="highlight">0.705</td><td class="highlight">0.503</td><td class="highlight">0.28</td><td class="highlight">0.720</td><td class="highlight">0.526</td><td class="highlight">0.29</td></tr>
+<tr><th scope="row">w/o S</th><td>0.230</td><td>0.278</td><td>0.03</td><td>0.211</td><td>0.274</td><td>0.03</td></tr>
+<tr><th scope="row">w/o I</th><td>0.633</td><td>0.485</td><td>0.23</td><td>0.643</td><td>0.500</td><td>0.25</td></tr>
+</tbody></table></div>
+</div>
+<p class="note">Without textual steps TCR drops to 0.03, as the text provides the order and structure of the task; without keyframes the drop is milder. All metrics improve on the clips with aligned keyframes, showing that keyframe selection matters.</p>
+<figure class="framework subsection narrow"><a href="assets/images/sim-sandwich.webp" target="_blank" rel="noopener" aria-label="Open figure at full size"><img src="assets/images/sim-sandwich.webp" loading="lazy" alt="Sandwich task in simulation: human video keyframes, the initial plan placing a whole tomato, and the corrected plan that slices the tomato first." width="1340" height="563"></a><figcaption><strong>Sandwich task in simulation.</strong> <em>A</em><sub>1</sub> places a whole tomato on the bacon. <em>A</em><sub>2</sub> inserts pick knife, slice tomato, and place knife before placing the slice (Fig. 4).</figcaption></figure>
+</section>
+<section id="real-world" class="section"><h2>Real-robot experiments</h2>
+<p class="section-intro">The same pipeline runs on an AgileX PiPER arm with a parallel gripper and an overhead Intel RealSense D405 camera. The skill library is {pick, place, cut}; each skill is one teleoperated demonstration replayed open-loop between shared ready poses. Toy food replaces real ingredients. We select three YouCook2 clips that cover two sources of mismatch.</p>
+<div class="task-list">
+<article><h3>Sandwich</h3><p class="component">Object condition mismatch</p><p>The human stacks tomato slices; the robot has a whole tomato, a knife, and a cutting board.</p></article>
+<article><h3>Pot</h3><p class="component">Object condition mismatch</p><p>The human puts potatoes into an open pot; the robot's pot is closed by a lid.</p></article>
+<article><h3>Burger</h3><p class="component">Logical inconsistency</p><p>The annotated steps place the cheese before picking it.</p></article>
+</div>
+<figure class="framework subsection narrow"><a href="assets/images/real-failures.webp" target="_blank" rel="noopener" aria-label="Open figure at full size"><img src="assets/images/real-failures.webp" loading="lazy" alt="Failures of the uncorrected plan: the sausage stays in the gripper, the eggplant lands on the closed lid, and the whole tomato is stacked while the bread falls." width="1340" height="351"></a><figcaption><strong>Failures of the uncorrected plan <em>A</em><sub>1</sub>.</strong> Without correction, <em>A</em><sub>1</sub> fails in all 30 physical trials (Fig. 5).</figcaption></figure>
+<div class="result-pair real-results"><div><h3>Feedback required by each task</h3><p>For each task, <em>A</em><sub>1</sub> is executed in 10 physical trials, and corrections are computed offline from the saved observations, so that every variant sees identical robot data. KitchenVLM raises the predicate fulfillment from <strong>0.08 to 0.88</strong> on average and outperforms every ablation.</p><p>The three tasks require increasingly rich feedback. Burger is solved by the execution outcome alone. Pot requires the robot image, which shows the lid. Sandwich is the only task where the missing information, that the tomato must be sliced, is visible only in the human video: without the keyframe, no correction inserts the cutting steps (0/30), whereas the full method does so in 15/30.</p></div>
+<div class="table-scroll" role="region" aria-label="Real-robot predicate fulfillment table" tabindex="0"><table><caption>Predicate fulfillment on the real robot, assuming perfect execution · Table 4</caption><thead><tr><th scope="col">Plan</th><th scope="col">Burger</th><th scope="col">Pot</th><th scope="col">Sandwich</th><th scope="col">Avg.</th></tr></thead><tbody>
+<tr><th scope="row"><em>A</em><sub>1</sub> (initial)</th><td>0.00</td><td>0.00</td><td>0.25</td><td>0.08</td></tr>
+<tr><th scope="row"><em>A</em><sub>2</sub> w/o S</th><td>0.50</td><td>0.00</td><td>0.50</td><td>0.33</td></tr>
+<tr><th scope="row"><em>A</em><sub>2</sub> state-only</th><td class="highlight">1.00</td><td>0.00</td><td>0.33</td><td>0.44</td></tr>
+<tr><th scope="row"><em>A</em><sub>2</sub> w/o I</th><td class="highlight">1.00</td><td>0.97</td><td>0.25</td><td>0.74</td></tr>
+<tr><th scope="row"><em>A</em><sub>2</sub> (ours)</th><td class="highlight">1.00</td><td class="highlight">1.00</td><td class="highlight">0.62</td><td class="highlight">0.88</td></tr>
+</tbody></table><p class="note">Mean over 10 trials; full and w/o I: 3 corrections per trial.</p></div></div>
+<figure class="framework subsection narrow"><a href="assets/images/real-sandwich.webp" target="_blank" rel="noopener" aria-label="Open figure at full size"><img src="assets/images/real-sandwich.webp" loading="lazy" alt="Executing the corrected sandwich plan: pick knife, cut tomato, place knife, pick slice, slice on bacon, pick bread, place bread, bread on top." width="1340" height="735"></a></figure>
+<div class="figure-pair subsection"><figure><a href="assets/images/real-pot.webp" target="_blank" rel="noopener" aria-label="Open figure at full size"><img src="assets/images/real-pot.webp" loading="lazy" alt="Executing the corrected pot plan: pick lid, lid on counter, pick eggplant, eggplant in pot." width="1340" height="399"></a></figure><figure><a href="assets/images/real-burger.webp" target="_blank" rel="noopener" aria-label="Open figure at full size"><img src="assets/images/real-burger.webp" loading="lazy" alt="Executing the corrected burger plan: initial, pick sausage, place on egg, final." width="1340" height="399"></a></figure></div>
+<p class="note">Executing the corrected plans <em>A</em><sub>2</sub> on the real robot (Fig. 6). Red labels mark steps inserted or reordered by KitchenVLM.</p>
+</section>
+<section id="demos" class="section"><h2>Videos</h2><p class="section-intro">Overhead-camera recordings of the corrected plans <em>A</em><sub>2</sub> executed on the real robot, at real-time speed.</p><div class="demo-grid demo-grid-3">
+<article class="demo-card" data-demo="sandwich"><div class="demo-media"><img src="assets/images/poster-sandwich.webp" loading="lazy" alt="Sandwich task: still frame." width="640" height="564"><span class="placeholder-label">Video</span></div><div class="demo-caption"><p class="demo-type">Real robot · 7 steps</p><h3>Make sandwich</h3><p>Pick knife, cut tomato, place knife, then stack the slice and the bread.</p></div></article>
+<article class="demo-card" data-demo="pot"><div class="demo-media"><img src="assets/images/poster-pot.webp" loading="lazy" alt="Pot task: still frame." width="640" height="564"><span class="placeholder-label">Video</span></div><div class="demo-caption"><p class="demo-type">Real robot · 4 steps</p><h3>Cook in pot</h3><p>Remove the lid first, then put the eggplant into the pot.</p></div></article>
+<article class="demo-card" data-demo="burger"><div class="demo-media"><img src="assets/images/poster-burger.webp" loading="lazy" alt="Burger task: still frame." width="640" height="564"><span class="placeholder-label">Video</span></div><div class="demo-caption"><p class="demo-type">Real robot · 2 steps</p><h3>Make burger</h3><p>Pick the sausage before placing it on the fried egg.</p></div></article>
+</div>
+<noscript><p class="note">JavaScript enables the video players. All text, figures and results remain available without JavaScript.</p></noscript></section>
+</main>
+<footer class="wrap footer"><p></p><a href="#main">Back to top</a></footer>
+</body></html>
