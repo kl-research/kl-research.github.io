@@ -19,7 +19,7 @@ figure{margin:18px 0}
 figure.wide{margin-top:4px}
 figcaption,.caption{font-size:14px;color:var(--muted);margin-top:6px}
 .caption{margin-top:-8px}
-.pair{display:grid;grid-template-columns:1.1fr 1fr;gap:16px;align-items:center}
+.pair{display:grid;grid-template-columns:1.75fr 1.28fr;gap:16px;align-items:center}
 .pair figure{margin:12px 0}
 table{border-collapse:collapse;margin:18px auto;font-size:14px;font-variant-numeric:tabular-nums}
 caption{caption-side:top;font-size:14px;color:var(--muted);padding-bottom:6px;text-align:left}

@@ -14,19 +14,19 @@
 
 <header class="title-block">
 <h1>KitchenVLM: Vision-Language Corrections for Robotic Execution of Human Tasks</h1>
-<p class="authors"><span>Kai Lu<sup>1</sup></span> <span>Chenyang Ma<sup>1</sup></span> <span>Ioannis Havoutis<sup>1,*</sup></span> <span>Chiori Hori<sup>2,*</sup></span> <span>Diego Romeres<sup>2,*</sup></span></p>
-<p class="affiliations"><sup>1</sup>University of Oxford &nbsp;&nbsp; <sup>2</sup>Mitsubishi Electric Research Laboratories</p>
-<p class="footnote"><sup>*</sup>Equal advising</p>
+<p class="authors"><span>Kai Lu<sup>1,2</sup></span> <span>Chenyang Ma<sup>1,2</sup></span> <span>Ioannis Havoutis<sup>1,*</sup></span> <span>Chiori Hori<sup>2,*</sup></span> <span>Diego Romeres<sup>2,*</sup></span></p>
+<p class="affiliations"><sup>1</sup>University of Oxford, Oxford, UK &nbsp;&nbsp; <sup>2</sup>Mitsubishi Electric Research Laboratories (MERL), Cambridge, USA</p>
+<p class="footnote">This work is part of an internship at MERL. &nbsp; <sup>*</sup>Equal advising.</p>
 </header>
 
 <section>
 <h2>Abstract</h2>
-<p>Human instructional videos describe long-horizon tasks such as cooking, but translating the extracted steps into robot-executable actions remains challenging, as the robot's workspace, objects, and skills differ from those in the video. We present KitchenVLM, a multimodal framework that corrects such plans through an agentic feedback loop, where vision-language models (VLMs) serve as evaluators and planners. KitchenVLM maps the steps to robot skills, executes them while recording observations, and compares the robot's observations with keyframes of the human video. The detected mismatches in object state, action feasibility, and sequence logic are passed to an LLM planner, which inserts, replaces, or reorders steps and recomposes a corrected plan. We evaluate KitchenVLM on YouCook2 cooking videos in simulation and on a real robot, where the corrected plans are more complete and executable than the initial ones, and both the textual steps and the human keyframes contribute to the correction.</p>
+<p>In this paper, we present KitchenVLM, a multimodal framework for generating and optimizing executable robot actions from human instructional videos. While recent advances in video understanding and step generation have shown promising results, translating these steps into robot-executable actions remains challenging, particularly for complex, long-horizon tasks such as those in kitchen environments. These challenges arise from domain discrepancies between human videos and robotic settings, as well as mismatches between human actions and robot capabilities. KitchenVLM addresses these issues with an agentic feedback loop, where vision-language models (VLMs) serve as evaluators and planners to detect object or state mismatches, assess action feasibility, and generate corrective steps that refine execution. By incorporating keyframe selection, language-guided segmentation, and robot verification, KitchenVLM refines robotic plans to ensure contextual accuracy and executability. Through perspective evaluation and correction, our framework enhances the adaptability and robustness of robotic task execution in kitchen environments, advancing the integration of VLMs into robot learning and executable plan correction.</p>
 </section>
 
 <section>
 <h2>Method</h2>
-<figure class="wide"><img src="assets/images/framework.webp" alt="KitchenVLM framework and the three real-robot tasks." width="2200" height="912"></figure>
+<figure class="wide"><img src="assets/images/framework.webp" alt="KitchenVLM framework and the three real-robot tasks." width="2200" height="921"></figure>
 <p>KitchenVLM consists of three steps:</p>
 <ol>
 <li><b>Object and action mapping.</b> Each human object is mapped to the most similar robot object, and each human verb to a robot skill (e.g., <i>add</i> → <i>place</i>), giving the initial plan <i>A</i><sub>1</sub>.</li>
@@ -38,8 +38,8 @@
 <section>
 <h2>Simulation</h2>
 <p>We use RoboCasa with a Franka Panda arm and 867 YouCook2 videos whose actions are covered by the robot's skills. GPT-4o serves every LLM and VLM function.</p>
-<div class="pair"><figure><img src="assets/images/youcook-examples.webp" alt="Example frames of YouCook2 cooking videos." width="592" height="462"></figure><figure><img src="assets/images/verb-frequency.webp" alt="Frequency of action verbs: pick 38.1%, place 34.9%, add 12.8%, stir 4.1%, cut 2.0%, others 8.0%." width="525" height="338"></figure></div>
-<p class="caption">YouCook2 example frames (left) and the frequency of action verbs (right).</p>
+<div class="pair"><figure><img src="assets/images/youcook-steps.webp" alt="Consecutive steps of three YouCook2 videos: omelette, coconut shrimp, and sushi." width="1455" height="830"></figure><figure><img src="assets/images/verb-frequency.webp" alt="Frequency of action verbs: pick 38.1%, place 34.9%, add 12.8%, stir 4.1%, cut 2.0%, others 8.0%." width="525" height="338"></figure></div>
+<p class="caption">Left: consecutive steps of three YouCook2 videos (one per row). Right: frequency of action verbs (%), where <i>others</i> covers the remaining 99 verbs.</p>
 
 <table>
 <caption>Judge scores (Table 1). *: only successfully executable plans.</caption>
