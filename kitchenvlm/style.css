@@ -22,3 +22,4 @@
 @media(max-width:760px){.table-row{grid-template-columns:1fr;gap:10px}.demo-grid-3{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.figure-pair,.task-list,.demo-grid-3{grid-template-columns:1fr}.task-list article+article{border-left:0;border-top:1px solid var(--line);padding-left:0;padding-top:16px}}
 .narrow{max-width:700px;margin-inline:auto}
+.authors{display:flex;flex-wrap:wrap;justify-content:center;column-gap:28px;row-gap:4px}
