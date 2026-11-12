@@ -1,0 +1,65 @@
+WEBVTT
+
+1
+00:00:00.300 --> 00:00:06.708
+In this video, we present PGX: physically grounded execution for long-horizon humanoid loco-manipulation.
+
+2
+00:00:08.800 --> 00:00:15.904
+Humans can easily learn and perform long-horizon tasks, such as brewing and fetching a cup of coffee. Can humanoid robots do the same?
+
+3
+00:00:16.800 --> 00:00:27.120
+Flat end-to-end VLA methods drop the mug, or walk past the coffee machine. A state machine alone still fails at the machine. PGX, our method, completes the entire long-horizon task.
+
+4
+00:00:31.800 --> 00:00:38.280
+PGX separates timing, skills, and precision. Physics decides when and where to act; the VLA learns how.
+
+5
+00:00:39.800 --> 00:00:43.640
+A state machine gated by physical predicates decides when to switch stages.
+
+6
+00:00:44.800 --> 00:00:48.784
+The VLA executes each manipulation skill from a stage-wise start state.
+
+7
+00:00:50.800 --> 00:00:58.432
+World-coordinate locking anchors the base and contact targets in the world frame. All execution layers are training-free except VLA models.
+
+8
+00:01:00.800 --> 00:01:09.368
+We fine-tune state-of-the-art VLA models on loco-manipulation demonstrations, and evaluate them on the grasp, place, press, re-grasp, and deliver skills.
+
+9
+00:01:11.800 --> 00:01:20.608
+A flat policy uses one VLA for both locomotion and manipulation, and loses track of the task: it drops the mug, or walks to the delivery area without brewing.
+
+10
+00:01:22.800 --> 00:01:36.792
+Inside PGX, both backbones complete the whole task: grasp, place, press, wait, re-grasp, and deliver. Final success rises from near zero to sixty percent for π₀.₅, and from thirty-five to eighty percent for GR00T.
+
+11
+00:01:40.800 --> 00:01:48.720
+The same executor applies to box transport and mug placement, lifting both backbones to reliable execution and improving the average success rate.
+
+12
+00:01:51.800 --> 00:02:02.648
+World-coordinate locking keeps the base at its stance. Under sustained disturbance, base drift falls from fifty-four to nine centimetres, and completed placements rise from seventy-four to ninety-seven percent.
+
+13
+00:02:06.000 --> 00:02:13.656
+Finally, we deploy PGX on a real Unitree G1 with Dex-3 hands. The VLA is fine-tuned on forty-four real demonstrations.
+
+14
+00:02:23.000 --> 00:02:27.200
+The robot places the mug at the machine, waits for brewing, then re-grasps it.
+
+15
+00:02:42.000 --> 00:02:44.112
+It carries the mug back and delivers it.
+
+16
+00:02:53.800 --> 00:02:55.672
+Thank you for watching.
