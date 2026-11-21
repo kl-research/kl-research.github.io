@@ -161,7 +161,7 @@ button[aria-pressed="true"] { border-color: var(--cmd); color: var(--cmd); }
 <div class="app">
   <header class="bar">
     <h1>H2 步态演示</h1>
-    <span class="sub">Unitree H2 · 速度跟踪策略 · 仿真在你的浏览器里运行</span>
+    <span class="sub">Unitree H2 - 速度跟踪策略 - 仿真在你的浏览器里运行</span>
     <span class="state" id="state" data-s="load"><span class="dot"></span><span id="state-text">加载中</span></span>
   </header>
 
@@ -171,7 +171,7 @@ button[aria-pressed="true"] { border-color: var(--cmd); color: var(--cmd); }
       <div class="hud" id="hud" hidden></div>
       <div class="banner" id="banner" hidden>摔倒了，马上重置</div>
       <div class="stick" id="stick" hidden aria-label="摇杆：上下控制前进后退，左右控制转向"><div class="knob" id="knob"></div></div>
-      <div class="hint" id="hint" hidden>拖动旋转视角 · 滚轮缩放 · <kbd>W</kbd><kbd>S</kbd> 前进后退 · <kbd>A</kbd><kbd>D</kbd> 侧移 · <kbd>Q</kbd><kbd>E</kbd> 转向 · <kbd>Shift</kbd> 加速 · <kbd>空格</kbd> 推 · <kbd>R</kbd> 重置 · <kbd>P</kbd> 暂停</div>
+      <div class="hint" id="hint" hidden>拖动旋转视角 - 滚轮缩放 - <kbd>W</kbd><kbd>S</kbd> 前进后退 - <kbd>A</kbd><kbd>D</kbd> 侧移 - <kbd>Q</kbd><kbd>E</kbd> 转向 - <kbd>Shift</kbd> 加速 - <kbd>空格</kbd> 推 - <kbd>R</kbd> 重置 - <kbd>P</kbd> 暂停</div>
       <div class="overlay" id="overlay"><div class="box"><div class="what" id="ov-what">正在准备仿真</div><div class="step" id="ov-step">加载物理引擎和机器人模型，共约 16 MB</div></div></div>
     </div>
 
@@ -184,18 +184,18 @@ button[aria-pressed="true"] { border-color: var(--cmd); color: var(--cmd); }
         </select></div>
         <div class="field"><label for="terrain">地形</label><select id="terrain">
           <option value="plain">平地</option>
-          <option value="pyramid_stairs">台阶 · 下行</option>
-          <option value="pyramid_stairs_inv">台阶 · 上行</option>
-          <option value="hf_pyramid_slope">斜坡 · 下行</option>
-          <option value="hf_pyramid_slope_inv">斜坡 · 上行</option>
+          <option value="pyramid_stairs">台阶 - 下行</option>
+          <option value="pyramid_stairs_inv">台阶 - 上行</option>
+          <option value="hf_pyramid_slope">斜坡 - 下行</option>
+          <option value="hf_pyramid_slope_inv">斜坡 - 上行</option>
           <option value="random_rough">碎石起伏</option>
           <option value="wave_terrain">波浪地面</option>
         </select></div>
         <div class="field"><label for="level">难度</label><select id="level" disabled>
-          <option value="0">1 档 · 最缓</option>
+          <option value="0">1 档 - 最缓</option>
           <option value="1">2 档</option>
           <option value="2">3 档</option>
-          <option value="3">4 档 · 最陡</option>
+          <option value="3">4 档 - 最陡</option>
         </select></div>
         <p class="note" id="terrain-note">平地是 Flat 策略的训练场景。</p>
       </section>
@@ -245,17 +245,15 @@ button[aria-pressed="true"] { border-color: var(--cmd); color: var(--cmd); }
       </section>
 
       <section class="sec">
-        <h2>这个演示里有什么</h2>
         <dl class="facts">
           <dt>策略</dt><dd id="fact-obs">98 维观测 → 29 个关节目标</dd>
           <dt>检查点</dt><dd id="fact-ckpt">训练第 10000 轮</dd>
-          <dt>网络</dt><dd>512-256-128 · ELU</dd>
-          <dt>控制</dt><dd>50 Hz · 物理 200 Hz</dd>
+          <dt>网络</dt><dd>512-256-128 - ELU</dd>
+          <dt>控制</dt><dd>50 Hz - 物理 200 Hz</dd>
           <dt>训练指令</dt><dd id="fact-vx">前进 −1.0 ~ 2.0 m/s</dd>
-          <dt></dt><dd id="fact-vy">侧移 ±1.0 · 转向 ±1.0</dd>
+          <dt></dt><dd id="fact-vy">侧移 ±1.0 - 转向 ±1.0</dd>
         </dl>
         <p class="note">物理 <a href="https://github.com/google-deepmind/mujoco" target="_blank" rel="noopener">MuJoCo</a>, 渲染 <a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> </p>
-
       </section>
     </aside>
   </main>
@@ -263,7 +261,7 @@ button[aria-pressed="true"] { border-color: var(--cmd); color: var(--cmd); }
 
 <script src="./three.min.js"></script>
 <script type="module">
-const $ = (id) => document.getElementById(id);
+const $ = (id) => document.getElementById(id) || document.createElement('span');
 const overlay = $('overlay'), ovWhat = $('ov-what'), ovStep = $('ov-step');
 const stateEl = $('state'), stateText = $('state-text');
 const setState = (s, text) => { stateEl.dataset.s = s; stateText.textContent = text; };
@@ -755,7 +753,7 @@ function start(mujoco, core, robot, assets) {
     $('fact-obs').textContent = `${p.dims[0]} 维观测 → 29 个关节目标`;
     $('fact-ckpt').textContent = `训练第 ${pol.meta.iteration} 轮`;
     $('fact-vx').textContent = `前进 ${f1(r.vx[0])} ~ ${f1(r.vx[1])} m/s`;
-    $('fact-vy').textContent = `侧移 ±${r.vy[1].toFixed(1)} · 转向 ±${r.wz[1].toFixed(1)}`;
+    $('fact-vy').textContent = `侧移 ±${r.vy[1].toFixed(1)} - 转向 ±${r.wz[1].toFixed(1)}`;
     $('fact-note').textContent = current.policy === 'rough'
       ? 'Rough 策略比 Flat 多 187 维高度扫描：从骨盆高度向下的 17×11 条射线，量到地面或自己腿上的距离。这里用的是第 4000 轮的检查点：那次训练在第 5000 轮把指令范围一步扩到 2 m/s 之后，前进能力就塌了，之前的检查点反而更好。指令滑块限制在它训练过的范围内。'
       : '物理引擎是 MuJoCo 的 WebAssembly 版本，模型参数与训练环境一致，外观网格做了简化。训练用的是 GPU 版 MuJoCo，这里是 CPU 版，两者数值略有差别。';
