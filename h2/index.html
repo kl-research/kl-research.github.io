@@ -1,0 +1,888 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="description" content="在浏览器里实时运行 Unitree H2 人形机器人的行走策略：MuJoCo WebAssembly 仿真，可切换策略和地形。"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<title>H2 步态演示</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one-screen instrument. The simulation fills the left; a narrow control column sits right and drops below on phones. */
+:root {
+  --bg: #E7EBEE;
+  --surface: #F5F7F8;
+  --ink: #16202A;
+  --muted: #5A6A77;
+  --line: #C8D1D8;
+  --cmd: #0B7F62;          /* commanded velocity */
+  --meas: #2A63C9;         /* measured velocity */
+  --warn: #C7410E;         /* disturbance / fall */
+  --on-warn: #FFFFFF;
+  --hud: rgba(245, 247, 248, 0.86);
+  --sky: #DCE3E8;
+  --floor-a: #C9D2D8;
+  --floor-b: #BFC9D0;
+  --grid: #9FADB7;
+  --terrain-lo: #A9B5BE;
+  --terrain-hi: #D2DAE0;
+  --font-ui: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-display: "Space Grotesk", var(--font-ui);
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F151A; --surface: #172029; --ink: #E5ECF1; --muted: #8E9FAD; --line: #2A3743;
+    --cmd: #3BD2A4; --meas: #74ABFF; --warn: #FF7F4D; --on-warn: #1A0D06;
+    --hud: rgba(23, 32, 41, 0.84);
+    --sky: #121A21; --floor-a: #1E2831; --floor-b: #1A232B; --grid: #33424F;
+    --terrain-lo: #161E25; --terrain-hi: #2E3B46;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F151A; --surface: #172029; --ink: #E5ECF1; --muted: #8E9FAD; --line: #2A3743;
+  --cmd: #3BD2A4; --meas: #74ABFF; --warn: #FF7F4D; --on-warn: #1A0D06;
+  --hud: rgba(23, 32, 41, 0.84);
+  --sky: #121A21; --floor-a: #1E2831; --floor-b: #1A232B; --grid: #33424F;
+  --terrain-lo: #161E25; --terrain-hi: #2E3B46;
+  color-scheme: dark;
+}
+
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-ui); font-size: 14px; line-height: 1.45;
+}
+.app {
+  height: 100%; box-sizing: border-box;
+  display: flex; flex-direction: column; gap: 10px;
+  padding-block: 10px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.bar { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 14px; }
+.bar h1 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 20px; letter-spacing: -0.01em; }
+.bar .sub { color: var(--muted); font-size: 13px; min-width: 0; }
+.bar .state {
+  margin-left: auto; font-family: var(--font-mono); font-size: 12px; color: var(--muted);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.state .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.state[data-s="run"] .dot { background: var(--cmd); }
+.state[data-s="fall"] .dot, .state[data-s="err"] .dot { background: var(--warn); }
+
+.stage { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 292px; gap: 10px; }
+.view {
+  position: relative; min-width: 0; min-height: 0; overflow: hidden;
+  background: var(--sky); border: 1px solid var(--line); border-radius: 8px;
+}
+.view canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; outline-offset: -3px; }
+.view canvas:active { cursor: grabbing; }
+
+.hud {
+  position: absolute; top: 10px; left: 10px; padding: 8px 10px;
+  background: var(--hud); border: 1px solid var(--line); border-radius: 6px;
+  font-family: var(--font-mono); font-size: 12px; line-height: 1.6; font-variant-numeric: tabular-nums;
+  pointer-events: none; white-space: pre;
+}
+.hud .k-cmd { color: var(--cmd); }
+.hud .k-meas { color: var(--meas); }
+.hud .dim { color: var(--muted); }
+
+.hint {
+  position: absolute; left: 132px; right: 10px; bottom: 10px; padding: 6px 10px;
+  background: var(--hud); border: 1px solid var(--line); border-radius: 6px;
+  color: var(--muted); font-size: 12px; pointer-events: none;
+}
+.hint kbd {
+  font-family: var(--font-mono); font-size: 11px; color: var(--ink);
+  border: 1px solid var(--line); border-radius: 3px; padding: 0 4px; background: var(--surface);
+}
+.stick {
+  position: absolute; left: 14px; bottom: 14px; width: 104px; height: 104px; border-radius: 50%;
+  background: var(--hud); border: 1px solid var(--line); touch-action: none;
+}
+.stick .knob {
+  position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%;
+  background: var(--surface); border: 1px solid var(--grid); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+.overlay {
+  position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px;
+  background: var(--sky); color: var(--ink);
+}
+.overlay .box { max-width: 34em; }
+.overlay .what { font-family: var(--font-display); font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+.overlay .step { color: var(--muted); font-size: 13px; }
+.overlay.err .what { color: var(--warn); }
+.banner {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%); padding: 6px 12px; border-radius: 6px;
+  background: var(--warn); color: var(--on-warn); font-size: 13px; font-weight: 600; pointer-events: none;
+}
+
+.panel {
+  min-height: 0; overflow-y: auto; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 8px; padding: 4px 14px 12px;
+}
+.sec { padding: 12px 0; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 9px; }
+.sec:last-child { border-bottom: 0; padding-bottom: 0; }
+.sec h2 { margin: 0; font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.04em; }
+.slider { display: grid; grid-template-columns: 2.4em minmax(0, 1fr) 6.6em; align-items: center; gap: 8px; }
+.slider label { font-size: 13px; }
+.slider output { font-family: var(--font-mono); font-size: 12px; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--cmd); }
+input[type="range"] { width: 100%; min-width: 0; margin: 0; accent-color: var(--cmd); }
+.field { display: grid; grid-template-columns: 2.4em minmax(0, 1fr); align-items: center; gap: 8px; }
+.field label { font-size: 13px; }
+.field select { width: 100%; min-width: 0; }
+select:disabled { opacity: 0.55; cursor: default; }
+.row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+button, select {
+  font: inherit; font-size: 13px; color: var(--ink); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; cursor: pointer;
+}
+button:hover, select:hover { border-color: var(--grid); }
+button:active { transform: translateY(1px); }
+button.push { background: var(--warn); color: var(--on-warn); border-color: var(--warn); font-weight: 600; flex: 1; }
+button[aria-pressed="true"] { border-color: var(--cmd); color: var(--cmd); }
+.grow { flex: 1; }
+.check { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+.check input { accent-color: var(--cmd); width: 15px; height: 15px; margin: 0; }
+:is(button, select, input, canvas):focus-visible { outline: 2px solid var(--meas); outline-offset: 2px; }
+.facts { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 10px; font-size: 12px; }
+.facts dt { color: var(--muted); }
+.facts dd { margin: 0; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.note { margin: 0; color: var(--muted); font-size: 12px; }
+.note a { color: var(--meas); }
+
+@media (max-width: 760px) {
+  .stage { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(300px, 56%) auto; overflow-y: auto; }
+  .panel { overflow: visible; }
+  .hint { display: none; }
+  .hud { font-size: 10.5px; line-height: 1.5; padding: 6px 8px; top: 8px; left: 8px; }
+  .bar .sub { flex-basis: 100%; order: 3; }
+}
+@media (pointer: coarse) { .hint { display: none; } }
+</style>
+
+<div class="app">
+  <header class="bar">
+    <h1>H2 步态演示</h1>
+    <span class="sub">Unitree H2 · 速度跟踪策略 · 仿真在你的浏览器里运行</span>
+    <span class="state" id="state" data-s="load"><span class="dot"></span><span id="state-text">加载中</span></span>
+  </header>
+
+  <main class="stage">
+    <div class="view" id="view">
+      <canvas id="scene" tabindex="0" aria-label="H2 机器人仿真画面，拖动可旋转视角"></canvas>
+      <div class="hud" id="hud" hidden></div>
+      <div class="banner" id="banner" hidden>摔倒了，马上重置</div>
+      <div class="stick" id="stick" hidden aria-label="摇杆：上下控制前进后退，左右控制转向"><div class="knob" id="knob"></div></div>
+      <div class="hint" id="hint" hidden>拖动旋转视角 · 滚轮缩放 · <kbd>W</kbd><kbd>S</kbd> 前进后退 · <kbd>A</kbd><kbd>D</kbd> 侧移 · <kbd>Q</kbd><kbd>E</kbd> 转向 · <kbd>Shift</kbd> 加速 · <kbd>空格</kbd> 推 · <kbd>R</kbd> 重置 · <kbd>P</kbd> 暂停</div>
+      <div class="overlay" id="overlay"><div class="box"><div class="what" id="ov-what">正在准备仿真</div><div class="step" id="ov-step">加载物理引擎和机器人模型，共约 16 MB</div></div></div>
+    </div>
+
+    <aside class="panel" aria-label="控制面板">
+      <section class="sec">
+        <h2>策略与地形</h2>
+        <div class="field"><label for="policy">策略</label><select id="policy">
+          <option value="flat">平地策略（Flat）</option>
+          <option value="rough">崎岖地形策略（Rough）</option>
+        </select></div>
+        <div class="field"><label for="terrain">地形</label><select id="terrain">
+          <option value="plain">平地</option>
+          <option value="pyramid_stairs">台阶 · 下行</option>
+          <option value="pyramid_stairs_inv">台阶 · 上行</option>
+          <option value="hf_pyramid_slope">斜坡 · 下行</option>
+          <option value="hf_pyramid_slope_inv">斜坡 · 上行</option>
+          <option value="random_rough">碎石起伏</option>
+          <option value="wave_terrain">波浪地面</option>
+        </select></div>
+        <div class="field"><label for="level">难度</label><select id="level" disabled>
+          <option value="0">1 档 · 最缓</option>
+          <option value="1">2 档</option>
+          <option value="2">3 档</option>
+          <option value="3">4 档 · 最陡</option>
+        </select></div>
+        <p class="note" id="terrain-note">平地是 Flat 策略的训练场景。</p>
+      </section>
+
+      <section class="sec">
+        <h2>速度指令</h2>
+        <div class="slider"><label for="vx">前进</label><input id="vx" type="range" min="-1" max="2" step="0.05" value="0.6"><output id="vx-o" for="vx"></output></div>
+        <div class="slider"><label for="vy">侧移</label><input id="vy" type="range" min="-1" max="1" step="0.05" value="0"><output id="vy-o" for="vy"></output></div>
+        <div class="slider"><label for="wz">转向</label><input id="wz" type="range" min="-1" max="1" step="0.05" value="0"><output id="wz-o" for="wz"></output></div>
+        <div class="row" id="presets">
+          <button type="button" data-vx="0">站立</button>
+          <button type="button" data-vx="0.5">慢走</button>
+          <button type="button" data-vx="1">行走</button>
+          <button type="button" data-vx="1.5">快走</button>
+          <button type="button" data-vx="2">跑</button>
+        </div>
+        <label class="check"><input id="hold" type="checkbox" checked>不转向时保持朝向</label>
+      </section>
+
+      <section class="sec">
+        <h2>扰动</h2>
+        <div class="row">
+          <select id="push-mag" aria-label="推的强度">
+            <option value="0.5">0.5 m/s（训练范围）</option>
+            <option value="1">1.0 m/s</option>
+            <option value="1.5">1.5 m/s</option>
+          </select>
+          <button type="button" class="push" id="push">推一把</button>
+        </div>
+        <p class="note">朝随机水平方向给机身一个瞬时速度。</p>
+      </section>
+
+      <section class="sec">
+        <h2>回放与视角</h2>
+        <div class="row">
+          <button type="button" id="reset">重置</button>
+          <button type="button" id="pause" aria-pressed="false">暂停</button>
+          <select id="speed" class="grow" aria-label="播放速度">
+            <option value="0.25">0.25× 慢放</option>
+            <option value="0.5">0.5× 慢放</option>
+            <option value="1" selected>1× 实时</option>
+            <option value="2">2× 快放</option>
+          </select>
+        </div>
+        <label class="check"><input id="follow" type="checkbox" checked>镜头跟随机器人</label>
+        <label class="check"><input id="collide" type="checkbox">显示碰撞体</label>
+      </section>
+
+      <section class="sec">
+        <h2>这个演示里有什么</h2>
+        <dl class="facts">
+          <dt>策略</dt><dd id="fact-obs">98 维观测 → 29 个关节目标</dd>
+          <dt>检查点</dt><dd id="fact-ckpt">训练第 10000 轮</dd>
+          <dt>网络</dt><dd>512-256-128 · ELU</dd>
+          <dt>控制</dt><dd>50 Hz · 物理 200 Hz</dd>
+          <dt>训练指令</dt><dd id="fact-vx">前进 −1.0 ~ 2.0 m/s</dd>
+          <dt></dt><dd id="fact-vy">侧移 ±1.0 · 转向 ±1.0</dd>
+        </dl>
+        <p class="note">物理 <a href="https://github.com/google-deepmind/mujoco" target="_blank" rel="noopener">MuJoCo</a> · 渲染 <a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> · 机器人模型和训练代码 <a href="https://github.com/unitreerobotics/unitree_rl_mjlab" target="_blank" rel="noopener">unitree_rl_mjlab</a>（Apache-2.0）</p>
+        <p class="note" id="fact-note">物理引擎是 MuJoCo 的 WebAssembly 版本，模型参数与训练环境一致，外观网格做了简化。训练用的是 GPU 版 MuJoCo，这里是 CPU 版，两者数值略有差别。</p>
+      </section>
+    </aside>
+  </main>
+</div>
+
+<script src="./three.min.js"></script>
+<script type="module">
+const $ = (id) => document.getElementById(id);
+const overlay = $('overlay'), ovWhat = $('ov-what'), ovStep = $('ov-step');
+const stateEl = $('state'), stateText = $('state-text');
+const setState = (s, text) => { stateEl.dataset.s = s; stateText.textContent = text; };
+const fail = (title, detail) => {
+  overlay.hidden = false; overlay.classList.add('err');
+  ovWhat.textContent = title; ovStep.textContent = detail;
+  setState('err', '出错');
+};
+
+async function getJSON(url, label) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(label + '下载失败（' + r.status + '）');
+  return await r.json();
+}
+// binary assets travel as base64 inside JSON
+function unpack(obj, label) {
+  const bin = atob(obj.b64), out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  if (out.length !== obj.bytes) throw new Error(label + '不完整');
+  return out.buffer;
+}
+async function importLocal(path) {
+  try { return await import(path); } catch (first) {
+    const r = await fetch(path);
+    if (!r.ok) throw first;
+    const url = URL.createObjectURL(new Blob([await r.text()], { type: 'text/javascript' }));
+    return await import(url);
+  }
+}
+
+async function boot() {
+  if (!window.THREE) throw new Error('three.js 没有加载成功，请检查网络后刷新。');
+  ovStep.textContent = '下载机器人模型、策略和物理引擎（约 16 MB）';
+  const [robot, meshes, flatScene, flatPol, wasmResp] = await Promise.all([
+    getJSON('./h2_robot.json', '机器人参数'),
+    getJSON('./h2_meshes.json', '机器人网格'),
+    getJSON('./h2_scene_flat.json', '平地场景'),
+    getJSON('./h2_policy_flat.json', '平地策略'),
+    fetch('./mujoco.wasm'),
+  ]);
+  if (!wasmResp.ok) throw new Error('物理引擎下载失败（' + wasmResp.status + '）');
+  const wasmBinary = await wasmResp.arrayBuffer();
+  ovStep.textContent = '启动物理引擎';
+  const [{ default: loadMujoco }, core] = await Promise.all([importLocal('./mujoco.js'), importLocal('./h2_core.js')]);
+  const mujoco = await loadMujoco({ wasmBinary });
+  ovStep.textContent = '编译机器人模型';
+  await new Promise((r) => setTimeout(r, 0));
+  core.installMeshes(mujoco, robot.mesh_index, unpack(meshes, '机器人网格'));
+  const assets = {
+    scenes: { flat: flatScene },
+    policies: { flat: { net: new core.MlpPolicy(flatPol.meta, unpack(flatPol, '平地策略')), scan: null, meta: flatPol.meta } },
+  };
+  start(mujoco, core, robot, assets);
+}
+
+function start(mujoco, core, robot, assets) {
+  const THREE = window.THREE;
+  const canvas = $('scene'), view = $('view');
+  const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+  // ---------- renderer, lights, floor (persist across scenes) ----------
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0xffffff, 14, 46);
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.05, 200);
+  camera.up.set(0, 0, 1);
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x8899aa, 0.55);
+  hemi.position.set(0, 0, 1);
+  scene.add(hemi);
+  const sun = new THREE.DirectionalLight(0xffffff, 0.6);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.camera.near = 1; sun.shadow.camera.far = 30;
+  sun.shadow.camera.left = -3.2; sun.shadow.camera.right = 3.2;
+  sun.shadow.camera.top = 3.2; sun.shadow.camera.bottom = -3.2;
+  sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02;
+  scene.add(sun, sun.target);
+
+  // flat floor: 1 m grid so stride length and drift are readable
+  const floorCanvas = document.createElement('canvas');
+  floorCanvas.width = floorCanvas.height = 512;
+  const floorTex = new THREE.CanvasTexture(floorCanvas);
+  floorTex.wrapS = floorTex.wrapT = THREE.RepeatWrapping;
+  floorTex.repeat.set(200, 200);               // one tile = 2 m x 2 m on a 400 m plane
+  floorTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  floorTex.encoding = THREE.sRGBEncoding;
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.95, metalness: 0 }));
+  floor.receiveShadow = true;
+  scene.add(floor);
+  function paintFloor() {
+    const g = floorCanvas.getContext('2d');
+    g.fillStyle = css('--floor-a'); g.fillRect(0, 0, 512, 512);
+    g.fillStyle = css('--floor-b'); g.fillRect(0, 0, 256, 256); g.fillRect(256, 256, 256, 256);
+    g.strokeStyle = css('--grid'); g.lineWidth = 3;
+    for (const p of [0, 256, 512]) { g.beginPath(); g.moveTo(p, 0); g.lineTo(p, 512); g.stroke(); g.beginPath(); g.moveTo(0, p); g.lineTo(512, p); g.stroke(); }
+    floorTex.needsUpdate = true;
+  }
+
+  const collideMat = new THREE.MeshStandardMaterial({ transparent: true, opacity: 0.45, roughness: 0.8, depthWrite: false });
+  const terrainMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 });
+  // same 1 m checker and grid as the flat floor, laid over the terrain in world coordinates
+  const terrainGrid = { value: new THREE.Color() };
+  terrainMat.extensions = { derivatives: true };
+  terrainMat.onBeforeCompile = (sh) => {
+    sh.uniforms.uGrid = terrainGrid;
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vWorld;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vWorld;\nuniform vec3 uGrid;')
+      .replace('#include <color_fragment>', `#include <color_fragment>
+        vec2 cell = floor(vWorld.xy);
+        diffuseColor.rgb *= mix(0.9, 1.0, mod(cell.x + cell.y, 2.0));
+        vec2 gw = abs(fract(vWorld.xy - 0.5) - 0.5) / max(fwidth(vWorld.xy), vec2(1e-5));
+        diffuseColor.rgb = mix(diffuseColor.rgb, uGrid, (1.0 - min(min(gw.x, gw.y), 1.0)) * 0.6);`);
+  };
+
+  // ---------- velocity arrows: commanded vs measured ----------
+  function makeArrow() {
+    const mat = new THREE.MeshBasicMaterial();
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 1, 10), mat);
+    shaft.geometry.translate(0, 0.5, 0);
+    const head = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.11, 14), mat);
+    head.geometry.translate(0, 0.055, 0);
+    const g = new THREE.Group(); g.add(shaft, head);
+    const up = new THREE.Vector3(0, 1, 0), dir = new THREE.Vector3();
+    g.userData = { mat, set(x, y, z, dx, dy) {
+      const len = Math.hypot(dx, dy);
+      g.visible = len > 0.04;
+      if (!g.visible) return;
+      g.position.set(x, y, z);
+      dir.set(dx / len, dy / len, 0);
+      g.quaternion.setFromUnitVectors(up, dir);
+      const body = Math.max(0.01, len * 0.5 - 0.11);     // 0.5 m of arrow per 1 m/s
+      shaft.scale.set(1, body, 1); head.position.y = body;
+    } };
+    scene.add(g);
+    return g;
+  }
+  const cmdArrow = makeArrow(), measArrow = makeArrow(), pushArrow = makeArrow();
+  pushArrow.visible = false;
+
+  // ---------- world: everything built from one MuJoCo model ----------
+  let sim = null, world = null;
+  const current = { scene: 'flat', policy: 'flat', terrain: 'plain', level: 0 };
+
+  function meshGeometry(model, meshId) {
+    const vadr = model.mesh_vertadr[meshId], fadr = model.mesh_faceadr[meshId], fnum = model.mesh_facenum[meshId];
+    const nadr = model.mesh_normaladr[meshId];
+    const V = model.mesh_vert, F = model.mesh_face, N = model.mesh_normal, FN = model.mesh_facenormal;
+    const pos = new Float32Array(fnum * 9), nor = new Float32Array(fnum * 9);
+    for (let f = 0; f < fnum; f++) {
+      for (let c = 0; c < 3; c++) {
+        const vi = (vadr + F[(fadr + f) * 3 + c]) * 3, ni = (nadr + FN[(fadr + f) * 3 + c]) * 3, o = f * 9 + c * 3;
+        pos[o] = V[vi]; pos[o + 1] = V[vi + 1]; pos[o + 2] = V[vi + 2];
+        nor[o] = N[ni]; nor[o + 1] = N[ni + 1]; nor[o + 2] = N[ni + 2];
+      }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+    return geo;
+  }
+  function capsule(radius, half) {
+    const g = new THREE.Group();
+    const cyl = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, 2 * half, 16, 1, true), collideMat);
+    cyl.rotation.x = Math.PI / 2;
+    const s1 = new THREE.Mesh(new THREE.SphereGeometry(radius, 16, 10), collideMat), s2 = s1.clone();
+    s1.position.z = half; s2.position.z = -half;
+    g.add(cyl, s1, s2);
+    return g;
+  }
+
+  // Static terrain: boxes merged into one mesh, each height field as a grid mesh. Colored by height.
+  const BOX_FACES = [
+    [[1, 0, 0], [[1, -1, -1], [1, 1, -1], [1, 1, 1], [1, -1, 1]]], [[-1, 0, 0], [[-1, 1, -1], [-1, -1, -1], [-1, -1, 1], [-1, 1, 1]]],
+    [[0, 1, 0], [[1, 1, -1], [-1, 1, -1], [-1, 1, 1], [1, 1, 1]]], [[0, -1, 0], [[-1, -1, -1], [1, -1, -1], [1, -1, 1], [-1, -1, 1]]],
+    [[0, 0, 1], [[-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]]], [[0, 0, -1], [[-1, 1, -1], [1, 1, -1], [1, -1, -1], [-1, -1, -1]]],
+  ];
+  function buildTerrain(model, data, terrainBody, group) {
+    const T = mujoco.mjtGeom, gType = model.geom_type, gBody = model.geom_bodyid, gSize = model.geom_size, gData = model.geom_dataid;
+    const xpos = data.geom_xpos, xmat = data.geom_xmat;
+    const boxPos = [], boxNor = [], meshes = [];
+    for (let i = 0; i < model.ngeom; i++) {
+      if (gBody[i] !== terrainBody) continue;
+      const p = [xpos[3 * i], xpos[3 * i + 1], xpos[3 * i + 2]], R = Array.from(xmat.subarray(9 * i, 9 * i + 9));
+      const tf = (x, y, z) => [p[0] + R[0] * x + R[1] * y + R[2] * z, p[1] + R[3] * x + R[4] * y + R[5] * z, p[2] + R[6] * x + R[7] * y + R[8] * z];
+      if (gType[i] === T.mjGEOM_BOX.value) {
+        const sx = gSize[3 * i], sy = gSize[3 * i + 1], sz = gSize[3 * i + 2];
+        for (const [n, q] of BOX_FACES) {
+          const nw = [R[0] * n[0] + R[1] * n[1] + R[2] * n[2], R[3] * n[0] + R[4] * n[1] + R[5] * n[2], R[6] * n[0] + R[7] * n[1] + R[8] * n[2]];
+          const v = q.map((c) => tf(c[0] * sx, c[1] * sy, c[2] * sz));
+          for (const k of [0, 1, 2, 0, 2, 3]) { boxPos.push(v[k][0], v[k][1], v[k][2]); boxNor.push(nw[0], nw[1], nw[2]); }
+        }
+      } else if (gType[i] === T.mjGEOM_HFIELD.value) {
+        const h = gData[i], nr = model.hfield_nrow[h], nc = model.hfield_ncol[h], adr = model.hfield_adr[h];
+        const rx = model.hfield_size[4 * h], ry = model.hfield_size[4 * h + 1], ez = model.hfield_size[4 * h + 2];
+        const D = model.hfield_data, pos = new Float32Array(nr * nc * 3), idx = new Uint32Array((nr - 1) * (nc - 1) * 6);
+        for (let r = 0; r < nr; r++) for (let c = 0; c < nc; c++) {
+          const w = tf(-rx + 2 * rx * c / (nc - 1), -ry + 2 * ry * r / (nr - 1), D[adr + r * nc + c] * ez), o = (r * nc + c) * 3;
+          pos[o] = w[0]; pos[o + 1] = w[1]; pos[o + 2] = w[2];
+        }
+        let k = 0;
+        for (let r = 0; r < nr - 1; r++) for (let c = 0; c < nc - 1; c++) {
+          const a = r * nc + c, b = a + 1, d = a + nc, e = d + 1;
+          idx[k++] = a; idx[k++] = b; idx[k++] = e; idx[k++] = a; idx[k++] = e; idx[k++] = d;
+        }
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        geo.setIndex(new THREE.BufferAttribute(idx, 1));
+        geo.computeVertexNormals();
+        meshes.push(geo);
+      }
+    }
+    if (boxPos.length) {
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(boxPos), 3));
+      geo.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(boxNor), 3));
+      meshes.push(geo);
+    }
+    let zmin = Infinity, zmax = -Infinity;
+    for (const g of meshes) { const a = g.attributes.position.array; for (let i = 2; i < a.length; i += 3) { if (a[i] < zmin) zmin = a[i]; if (a[i] > zmax) zmax = a[i]; } }
+    const out = [];
+    for (const g of meshes) {
+      g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 3), 3));
+      const m = new THREE.Mesh(g, terrainMat);
+      m.receiveShadow = true; m.castShadow = true;
+      group.add(m); out.push(m);
+    }
+    return { meshes: out, zmin, zmax };
+  }
+  function paintTerrain(w) {
+    if (!w || !w.terrain) return;
+    const lo = new THREE.Color(css('--terrain-lo')).convertSRGBToLinear(), hi = new THREE.Color(css('--terrain-hi')).convertSRGBToLinear();
+    const span = Math.max(1e-6, w.terrain.zmax - w.terrain.zmin);
+    for (const m of w.terrain.meshes) {
+      const p = m.geometry.attributes.position.array, c = m.geometry.attributes.color.array;
+      for (let i = 0; i < p.length; i += 3) {
+        const t = Math.pow((p[i + 2] - w.terrain.zmin) / span, 0.8);
+        c[i] = lo.r + (hi.r - lo.r) * t; c[i + 1] = lo.g + (hi.g - lo.g) * t; c[i + 2] = lo.b + (hi.b - lo.b) * t;
+      }
+      m.geometry.attributes.color.needsUpdate = true;
+    }
+  }
+
+  function buildWorld(s) {
+    const model = s.model, data = s.data;
+    const root = new THREE.Group(), visual = new THREE.Group(), collide = new THREE.Group(), terrainGroup = new THREE.Group();
+    collide.visible = $('collide').checked;
+    root.add(visual, collide, terrainGroup);
+    const geoms = [], owned = [];
+    const gType = model.geom_type, gGroup = model.geom_group, gSize = model.geom_size, gData = model.geom_dataid, gBody = model.geom_bodyid;
+    const T = mujoco.mjtGeom, cache = new Map(), mats = new Map(), gRgba = model.geom_rgba;
+    // robot shells use the color stored in the model file (rgba 0.7 0.7 0.7 for H2)
+    const shell = (i) => {
+      const r = gRgba[4 * i], g = gRgba[4 * i + 1], b = gRgba[4 * i + 2], key = r + ',' + g + ',' + b;
+      if (!mats.has(key)) mats.set(key, new THREE.MeshStandardMaterial({ color: new THREE.Color(r, g, b).convertSRGBToLinear(), roughness: 0.55, metalness: 0.1 }));
+      return mats.get(key);
+    };
+    for (let i = 0; i < model.ngeom; i++) {
+      if (gBody[i] === s.terrainBody) continue;      // terrain is drawn by buildTerrain / the flat floor
+      const type = gType[i], sx = gSize[i * 3], sy = gSize[i * 3 + 1], sz = gSize[i * 3 + 2];
+      let obj = null;
+      if (type === T.mjGEOM_MESH.value) {
+        if (!cache.has(gData[i])) { cache.set(gData[i], meshGeometry(model, gData[i])); owned.push(cache.get(gData[i])); }
+        obj = new THREE.Mesh(cache.get(gData[i]), shell(i));
+        obj.castShadow = true; obj.receiveShadow = true;
+      } else if (type === T.mjGEOM_SPHERE.value) {
+        obj = new THREE.Mesh(new THREE.SphereGeometry(sx, 20, 12), collideMat);
+      } else if (type === T.mjGEOM_CAPSULE.value) {
+        obj = capsule(sx, sy);
+      } else if (type === T.mjGEOM_CYLINDER.value) {
+        obj = new THREE.Mesh(new THREE.CylinderGeometry(sx, sx, 2 * sy, 20), collideMat);
+        obj.geometry.rotateX(Math.PI / 2);
+      } else if (type === T.mjGEOM_BOX.value) {
+        obj = new THREE.Mesh(new THREE.BoxGeometry(2 * sx, 2 * sy, 2 * sz), collideMat);
+      } else if (type === T.mjGEOM_ELLIPSOID.value) {
+        obj = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 12), collideMat);
+        obj.scale.set(sx, sy, sz);
+      }
+      if (!obj) continue;
+      obj.matrixAutoUpdate = false;
+      (gGroup[i] <= 2 ? visual : collide).add(obj);
+      geoms.push({ obj, id: i, scale: obj.scale.clone() });
+    }
+    const w = { root, collide, geoms, owned, mats, terrain: null, xpos: data.geom_xpos, xmat: data.geom_xmat };
+    if (s.scene.terrain) { w.terrain = buildTerrain(model, data, s.terrainBody, terrainGroup); paintTerrain(w); }
+    floor.visible = !s.scene.terrain;
+    scene.add(root);
+    return w;
+  }
+  function disposeWorld(w) {
+    scene.remove(w.root);
+    w.root.traverse((o) => { if (o.geometry && !w.owned.includes(o.geometry)) o.geometry.dispose(); });
+    for (const g of w.owned) g.dispose();
+    for (const m of w.mats.values()) m.dispose();
+  }
+  function syncGeoms() {
+    const xpos = world.xpos, xmat = world.xmat;
+    for (const g of world.geoms) {
+      const p = g.id * 3, r = g.id * 9, s = g.scale;
+      g.obj.matrix.set(
+        xmat[r] * s.x, xmat[r + 1] * s.y, xmat[r + 2] * s.z, xpos[p],
+        xmat[r + 3] * s.x, xmat[r + 4] * s.y, xmat[r + 5] * s.z, xpos[p + 1],
+        xmat[r + 6] * s.x, xmat[r + 7] * s.y, xmat[r + 8] * s.z, xpos[p + 2],
+        0, 0, 0, 1);
+      g.obj.matrixWorldNeedsUpdate = true;
+    }
+  }
+
+  function applyTheme() {
+    const sky = new THREE.Color(css('--sky'));
+    scene.background = sky; scene.fog.color.copy(sky);
+    collideMat.color.set(css('--warn'));
+    cmdArrow.userData.mat.color.set(css('--cmd'));
+    measArrow.userData.mat.color.set(css('--meas'));
+    pushArrow.userData.mat.color.set(css('--warn'));
+    hemi.groundColor.set(css('--floor-b'));
+    terrainGrid.value.set(css('--grid')).convertSRGBToLinear();
+    paintFloor(); paintTerrain(world);
+  }
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+  new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  // ---------- camera ----------
+  const cam = { az: -58, el: 12, dist: 4.6, lookZ: 0.9, target: new THREE.Vector3(0, 0, 0.9), follow: true };
+  const followPoint = new THREE.Vector3();
+  const lookAtRobot = () => { const q = sim.data.qpos; return followPoint.set(q[0], q[1], q[2] - sim.standZ + cam.lookZ); };
+  function placeCamera() {
+    const az = cam.az * Math.PI / 180, el = cam.el * Math.PI / 180;
+    camera.position.set(
+      cam.target.x + cam.dist * Math.cos(el) * Math.cos(az),
+      cam.target.y + cam.dist * Math.cos(el) * Math.sin(az),
+      cam.target.z + cam.dist * Math.sin(el));
+    camera.lookAt(cam.target);
+  }
+  const pointers = new Map();
+  let pinch = 0;
+  canvas.addEventListener('pointerdown', (e) => { canvas.setPointerCapture(e.pointerId); pointers.set(e.pointerId, [e.clientX, e.clientY]); pinch = 0; });
+  canvas.addEventListener('pointermove', (e) => {
+    const p = pointers.get(e.pointerId); if (!p) return;
+    const dx = e.clientX - p[0], dy = e.clientY - p[1];
+    p[0] = e.clientX; p[1] = e.clientY;
+    if (pointers.size === 1) {
+      cam.az -= dx * 0.35; cam.el = Math.max(2, Math.min(86, cam.el + dy * 0.3));
+    } else if (pointers.size === 2) {
+      const [a, b] = [...pointers.values()];
+      const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+      if (pinch) cam.dist = Math.max(1.6, Math.min(14, cam.dist * pinch / d));
+      pinch = d;
+    }
+  });
+  const drop = (e) => { pointers.delete(e.pointerId); pinch = 0; };
+  canvas.addEventListener('pointerup', drop); canvas.addEventListener('pointercancel', drop);
+  canvas.addEventListener('wheel', (e) => { e.preventDefault(); cam.dist = Math.max(1.6, Math.min(14, cam.dist * Math.exp(e.deltaY * 0.0012))); }, { passive: false });
+
+  function resize() {
+    const w = view.clientWidth, h = view.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    // tall, narrow views: pull back and aim higher so the robot and its arrows sit below the readout
+    const tall = w / h < 0.95;
+    if (tall !== cam.tall) { cam.tall = tall; cam.dist = tall ? 6.6 : 4.6; cam.lookZ = tall ? 1.7 : 0.9; }
+  }
+  new ResizeObserver(resize).observe(view);
+  resize();
+
+  // ---------- inputs ----------
+  const sl = { vx: $('vx'), vy: $('vy'), wz: $('wz') };
+  const fmt = (v) => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2);
+  const units = { vx: ' m/s', vy: ' m/s', wz: ' rad/s' };
+  function showSliders() { for (const k in sl) $(k + '-o').textContent = fmt(+sl[k].value) + units[k]; }
+  for (const k in sl) sl[k].addEventListener('input', showSliders);
+  showSliders();
+  $('presets').addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    sl.vx.value = clampTo(+b.dataset.vx, range.vx); sl.vy.value = 0; sl.wz.value = 0; showSliders();
+  });
+
+  const keys = new Set();
+  const typing = (el) => el && (el.tagName === 'SELECT' || (el.tagName === 'INPUT' && el.type !== 'range' && el.type !== 'checkbox'));
+  window.addEventListener('keydown', (e) => {
+    if (typing(document.activeElement) || e.metaKey || e.ctrlKey || e.altKey) return;
+    const k = e.key.toLowerCase();
+    if (k === ' ') { e.preventDefault(); if (!e.repeat) doPush(); return; }
+    if (k === 'r') { doReset(); return; }
+    if (k === 'p') { togglePause(); return; }
+    if ('wasdqe'.includes(k) || k === 'shift') keys.add(k);
+  });
+  window.addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
+  window.addEventListener('blur', () => keys.clear());
+
+  const stick = $('stick'), knob = $('knob');
+  const joy = { x: 0, y: 0, on: false };
+  function joyMove(e) {
+    const r = stick.getBoundingClientRect(), R = r.width / 2;
+    let x = (e.clientX - r.left - R) / (R - 22), y = (e.clientY - r.top - R) / (R - 22);
+    const m = Math.hypot(x, y); if (m > 1) { x /= m; y /= m; }
+    joy.x = x; joy.y = y;
+    knob.style.transform = `translate(${x * (R - 22)}px, ${y * (R - 22)}px)`;
+  }
+  stick.addEventListener('pointerdown', (e) => { stick.setPointerCapture(e.pointerId); joy.on = true; joyMove(e); });
+  stick.addEventListener('pointermove', (e) => { if (joy.on) joyMove(e); });
+  const joyEnd = () => { joy.on = false; joy.x = joy.y = 0; knob.style.transform = ''; };
+  stick.addEventListener('pointerup', joyEnd); stick.addEventListener('pointercancel', joyEnd);
+
+  const user = [0, 0, 0];
+  let range = { vx: [-1, 2], vy: [-1, 1], wz: [-1, 1] };
+  const clampTo = (v, r) => Math.max(r[0], Math.min(r[1], v));
+  function applyRange(r) {
+    range = r;
+    for (const k in sl) { sl[k].min = r[k][0]; sl[k].max = r[k][1]; sl[k].value = clampTo(+sl[k].value, r[k]); }
+    showSliders();
+  }
+  function readCommand() {
+    user[0] = +sl.vx.value; user[1] = +sl.vy.value; user[2] = +sl.wz.value;
+    const fast = keys.has('shift');
+    if (keys.has('w')) user[0] = fast ? 2.0 : 1.0;
+    if (keys.has('s')) user[0] = fast ? -1.0 : -0.5;
+    if (keys.has('a')) user[1] = 0.5;
+    if (keys.has('d')) user[1] = -0.5;
+    if (keys.has('q')) user[2] = 0.8;
+    if (keys.has('e')) user[2] = -0.8;
+    if (joy.on) {
+      user[0] = joy.y < 0 ? -joy.y * 1.5 : -joy.y * 0.8;
+      user[1] = 0;
+      user[2] = Math.abs(joy.x) > 0.15 ? -joy.x : 0;
+    }
+    user[0] = clampTo(user[0], range.vx); user[1] = clampTo(user[1], range.vy); user[2] = clampTo(user[2], range.wz);
+  }
+
+  let paused = false, speed = 1, falls = 0, fallClock = 0, pushClock = 0, busy = false;
+  const bv = [0, 0, 0], meas = [0, 0, 0], pushDir = [0, 0];
+  let acc = 0;
+  function doPush() {
+    if (busy) return;
+    const mag = +$('push-mag').value, a = Math.random() * 2 * Math.PI;
+    pushDir[0] = Math.cos(a) * mag; pushDir[1] = Math.sin(a) * mag;
+    sim.push(pushDir[0], pushDir[1]);
+    pushClock = 0.7;
+  }
+  function doReset() {
+    if (busy) return;
+    sim.reset(); fallClock = 0; $('banner').hidden = true; acc = 0; meas.fill(0);
+  }
+  function togglePause() {
+    paused = !paused;
+    $('pause').textContent = paused ? '继续' : '暂停';
+    $('pause').setAttribute('aria-pressed', String(paused));
+  }
+  $('push').addEventListener('click', doPush);
+  $('reset').addEventListener('click', doReset);
+  $('pause').addEventListener('click', togglePause);
+  $('speed').addEventListener('change', (e) => { speed = +e.target.value; });
+  $('follow').addEventListener('change', (e) => { cam.follow = e.target.checked; });
+  $('collide').addEventListener('change', (e) => { if (world) world.collide.visible = e.target.checked; });
+
+  // ---------- policy and terrain selection ----------
+  const TERRAIN_NAMES = { plain: '平地', pyramid_stairs: '台阶↓', pyramid_stairs_inv: '台阶↑', hf_pyramid_slope: '斜坡↓', hf_pyramid_slope_inv: '斜坡↑', random_rough: '碎石', wave_terrain: '波浪' };
+  const POLICY_NAMES = { flat: 'Flat', rough: 'Rough' };
+  let roughScene = null, roughPolicy = null;
+  async function ensure(sel) {
+    const jobs = [];
+    if (sel.terrain !== 'plain' && !assets.scenes.rough) {
+      roughScene = roughScene || getJSON('./h2_scene_rough.json', '崎岖地形');
+      jobs.push(roughScene.then((s) => { assets.scenes.rough = s; }));
+    }
+    if (sel.policy === 'rough' && !assets.policies.rough) {
+      roughPolicy = roughPolicy || getJSON('./h2_policy_rough.json', '崎岖地形策略');
+      jobs.push(roughPolicy.then((p) => { assets.policies.rough = { net: new core.MlpPolicy(p.meta, unpack(p, '崎岖地形策略')), scan: p.meta.scan, meta: p.meta }; }));
+    }
+    await Promise.all(jobs);
+  }
+  function describe() {
+    const note = $('terrain-note'), T = assets.scenes.rough && assets.scenes.rough.terrain;
+    if (current.terrain === 'plain') {
+      note.textContent = '平地是 Flat 策略的训练场景。';
+    } else if (T) {
+      const z = T.origins[current.level][T.types.indexOf(current.terrain)][2];
+      const drop = Math.abs(z) > 0.02 ? `起点比外圈${z > 0 ? '高' : '低'} ${Math.abs(z).toFixed(2)} m。` : '';
+      note.textContent = `地形由训练用的生成器生成，每块 8 m 见方。${drop}一直往前走会进入更难的一档。`;
+    }
+    const pol = assets.policies[current.policy], p = pol.net, r = pol.meta.cmd_range, f1 = (v) => (v < 0 ? '−' : '') + Math.abs(v).toFixed(1);
+    $('fact-obs').textContent = `${p.dims[0]} 维观测 → 29 个关节目标`;
+    $('fact-ckpt').textContent = `训练第 ${pol.meta.iteration} 轮`;
+    $('fact-vx').textContent = `前进 ${f1(r.vx[0])} ~ ${f1(r.vx[1])} m/s`;
+    $('fact-vy').textContent = `侧移 ±${r.vy[1].toFixed(1)} · 转向 ±${r.wz[1].toFixed(1)}`;
+    $('fact-note').textContent = current.policy === 'rough'
+      ? 'Rough 策略比 Flat 多 187 维高度扫描：从骨盆高度向下的 17×11 条射线，量到地面或自己腿上的距离。这里用的是第 4000 轮的检查点：那次训练在第 5000 轮把指令范围一步扩到 2 m/s 之后，前进能力就塌了，之前的检查点反而更好。指令滑块限制在它训练过的范围内。'
+      : '物理引擎是 MuJoCo 的 WebAssembly 版本，模型参数与训练环境一致，外观网格做了简化。训练用的是 GPU 版 MuJoCo，这里是 CPU 版，两者数值略有差别。';
+  }
+  function enter(sel) {
+    const sceneName = sel.terrain === 'plain' ? 'flat' : 'rough';
+    if (!sim || sceneName !== current.scene) {
+      if (world) disposeWorld(world);
+      if (sim) sim.dispose();
+      sim = new core.H2Sim(mujoco, robot, assets.scenes[sceneName]);
+      current.scene = sceneName;
+      const pol0 = assets.policies[sel.policy];
+      sim.setPolicy(pol0.net, pol0.scan);
+      sim.reset(0, 0);
+      world = buildWorld(sim);
+    }
+    const pol = assets.policies[sel.policy];
+    sim.setPolicy(pol.net, pol.scan);
+    let x = 0, y = 0;
+    if (sel.terrain !== 'plain') {
+      const T = assets.scenes.rough.terrain;
+      [x, y] = T.origins[sel.level][T.types.indexOf(sel.terrain)];
+    }
+    sim.reset(x, y);
+    Object.assign(current, { policy: sel.policy, terrain: sel.terrain, level: sel.level });
+    applyRange(pol.meta.cmd_range);
+    fallClock = 0; acc = 0; meas.fill(0); $('banner').hidden = true;
+    cam.target.copy(lookAtRobot());
+    $('level').disabled = sel.terrain === 'plain';
+    describe();
+  }
+  async function select(sel) {
+    if (busy) return;
+    busy = true;
+    for (const id of ['policy', 'terrain', 'level']) $(id).disabled = true;
+    try {
+      const need = (sel.terrain !== 'plain' && !assets.scenes.rough) || (sel.policy === 'rough' && !assets.policies.rough);
+      if (need) setState('load', '加载中');
+      await ensure(sel);
+      enter(sel);
+    } catch (e) {
+      console.error(e);
+      $('terrain-note').textContent = '切换失败：' + (e && e.message ? e.message : e);
+    } finally {
+      busy = false;
+      $('policy').disabled = false; $('terrain').disabled = false;
+      $('level').disabled = current.terrain === 'plain';
+      $('policy').value = current.policy; $('terrain').value = current.terrain; $('level').value = String(current.level);
+    }
+  }
+  $('policy').addEventListener('change', (e) => {
+    // the Rough policy is shown on rough ground by default
+    const terrain = e.target.value === 'rough' && current.terrain === 'plain' ? 'pyramid_stairs' : current.terrain;
+    const level = terrain !== current.terrain ? 1 : current.level;
+    select({ policy: e.target.value, terrain, level });
+  });
+  $('terrain').addEventListener('change', (e) => select({ policy: current.policy, terrain: e.target.value, level: e.target.value === 'plain' ? 0 : +$('level').value }));
+  $('level').addEventListener('change', (e) => select({ policy: current.policy, terrain: current.terrain, level: +e.target.value }));
+
+  // ---------- main loop ----------
+  const hud = $('hud'), banner = $('banner');
+  let last = performance.now(), rtSim = 0, rtWall = 0, rtf = 1, hudClock = 0;
+  const pad = (v) => ((v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2));
+
+  function stepOnce() {
+    readCommand();
+    const fell = sim.controlStep(user, $('hold').checked);
+    sim.bodyVelocity(bv);
+    for (let i = 0; i < 3; i++) meas[i] += (bv[i] - meas[i]) * 0.08;   // ~0.25 s smoothing over the gait cycle
+    if (fell) {
+      if (fallClock === 0) { falls++; banner.hidden = false; }
+      fallClock += sim.stepDt;
+      if (fallClock > 1.2) doReset();
+    }
+    if (pushClock > 0) pushClock -= sim.stepDt;
+  }
+
+  function frame(now) {
+    const wall = (now - last) / 1000, dt = Math.min(0.1, wall); last = now;
+    if (!paused && !busy) {
+      acc += dt * speed;
+      let n = 0;
+      while (acc >= sim.stepDt && n < 10) { stepOnce(); acc -= sim.stepDt; n++; }
+      if (acc > sim.stepDt * 3) acc = 0;      // tab was hidden or the device can't keep up: don't spiral
+      rtSim += n * sim.stepDt; rtWall += wall;
+      if (rtWall > 0.5) { rtf = rtSim / rtWall; rtSim = rtWall = 0; }
+    }
+
+    syncGeoms();
+    const q = sim.data.qpos, bx = q[0], by = q[1], bz = q[2];
+    if (cam.follow) cam.target.lerp(lookAtRobot(), 0.12);
+    placeCamera();
+    sun.target.position.set(bx, by, bz - 1); sun.position.set(bx + 3.5, by - 4.5, bz + 8);
+    const yaw = sim.yaw(), c = Math.cos(yaw), s = Math.sin(yaw), az = bz + 0.98;
+    cmdArrow.userData.set(bx, by, az, c * sim.cmd[0] - s * sim.cmd[1], s * sim.cmd[0] + c * sim.cmd[1]);
+    measArrow.userData.set(bx, by, az - 0.07, c * meas[0] - s * meas[1], s * meas[0] + c * meas[1]);
+    if (pushClock > 0) pushArrow.userData.set(bx - pushDir[0] * 0.5, by - pushDir[1] * 0.5, bz + 0.25, pushDir[0], pushDir[1]);
+    else pushArrow.visible = false;
+    renderer.render(scene, camera);
+
+    hudClock += dt;
+    if (hudClock > 0.1) {
+      hudClock = 0;
+      const where = TERRAIN_NAMES[current.terrain] + (current.terrain === 'plain' ? '' : ' ' + (current.level + 1) + '档');
+      hud.innerHTML =
+        `t ${sim.time.toFixed(1).padStart(6)} s   <span class="dim">${(paused ? 0 : rtf).toFixed(2)}× 实时</span>\n` +
+        `<span class="k-cmd">指令</span>  vx ${pad(sim.cmd[0])}  vy ${pad(sim.cmd[1])}  wz ${pad(sim.cmd[2])}\n` +
+        `<span class="k-meas">实际</span>  vx ${pad(meas[0])}  vy ${pad(meas[1])}  wz ${pad(meas[2])}\n` +
+        `<span class="dim">离地</span> ${(bz - sim.groundZ).toFixed(2)} m   <span class="dim">摔倒</span> ${falls} 次\n` +
+        `<span class="dim">策略</span> ${POLICY_NAMES[current.policy]}   <span class="dim">地形</span> ${where}`;
+      if (!busy) setState(paused ? 'load' : sim.fallen ? 'fall' : 'run', paused ? '已暂停' : sim.fallen ? '摔倒' : '运行中');
+    }
+    requestAnimationFrame(frame);
+  }
+
+  enter({ policy: 'flat', terrain: 'plain', level: 0 });
+  applyTheme();
+  overlay.hidden = true; hud.hidden = false; stick.hidden = false; $('hint').hidden = false;
+  setState('run', '运行中');
+  window.__h2 = { get sim() { return sim; }, cam, current, select, get falls() { return falls; }, get rtf() { return rtf; }, meas, get busy() { return busy; } };
+  requestAnimationFrame(frame);
+}
+
+boot().catch((e) => {
+  console.error(e);
+  fail('演示没能启动', (e && e.message) ? e.message : String(e));
+});
+</script>
+
+</body></html>
