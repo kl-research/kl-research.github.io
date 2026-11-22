@@ -755,7 +755,7 @@ function start(mujoco, core, robot, assets) {
     $('fact-vx').textContent = `前进 ${f1(r.vx[0])} ~ ${f1(r.vx[1])} m/s`;
     $('fact-vy').textContent = `侧移 ±${r.vy[1].toFixed(1)} - 转向 ±${r.wz[1].toFixed(1)}`;
     $('fact-note').textContent = current.policy === 'rough'
-      ? 'Rough 策略比 Flat 多 187 维高度扫描：从骨盆高度向下的 17×11 条射线，量到地面或自己腿上的距离。这里用的是第 4000 轮的检查点：那次训练在第 5000 轮把指令范围一步扩到 2 m/s 之后，前进能力就塌了，之前的检查点反而更好。指令滑块限制在它训练过的范围内。'
+      ? 'Rough 策略比 Flat 多 187 维高度扫描：从骨盆高度向下的 17×11 条射线，量到地面或自己腿上的距离。这里用的是第 8000 轮的检查点。'
       : '物理引擎是 MuJoCo 的 WebAssembly 版本，模型参数与训练环境一致，外观网格做了简化。训练用的是 GPU 版 MuJoCo，这里是 CPU 版，两者数值略有差别。';
   }
   function enter(sel) {
